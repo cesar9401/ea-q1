@@ -1,0 +1,42 @@
+---
+title: "Tarea 1 - Matrices"
+author: "César Reginaldo Tzoc Alvarado"
+date: "`r Sys.Date()`"
+output:
+  word_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, comment = NA)
+
+```{r definicion}
+### 1. Defina los siguientes vectores y matrices:
+
+A <- matrix(c(1, 3, -2), nrow=3)
+B <- matrix(c(1, 0, -1, 2), nrow=4)
+C <- matrix(c(2, 0, -5, 7), nrow=2, byrow=TRUE)
+D <- matrix(c(3, 1, 1, -1, -5, 3), nrow=2, byrow=TRUE)
+E <- matrix(c(5, -3, 10, 6, 1, 2, -5, 2, 1), nrow=3, byrow=TRUE)
+F <- matrix(c(1, -3, 2, 3, 2, 1, 2, 1, 4), nrow=3, byrow=TRUE)
+
+### 2. Realice las siguientes operaciones:
+
+# Multiplicación por escalar
+2 * A
+
+# Operación con error
+resultado_error <- try(A - 5*B, silent = TRUE)
+print(paste("Resultado A - 5B:", attr(resultado_error, "condition")$message))
+
+# Operaciones adicionales
+C * C
+3 * E - 4 * F
+
+### 3. Considere los vectores
+
+v_mes <- 1:5
+v_ventas <- c(50, 80, 150, 200, 350)
+detalle <- cbind(Mes = v_mes, Ventas = v_ventas)
+
+detalle
