@@ -59,3 +59,25 @@ matrixA
 
 apply(matrixA, MARGIN = 1, FUN = sum) # sum by rows
 apply(matrixA, MARGIN = 2, FUN = sum) # sum by columns
+
+iris
+apply(iris[1:4], 2, mean)
+
+# lapply -> operations by elements of a list
+lapply(1:5, function(x) x^2)
+listA <- list(1:9, rep(1:2, 10), c(T, T, F, T, F, F, T))
+lapply(listA, mean)
+
+# sapply -> same as lapply but returns a vector or matrix instead of a list
+sapply(1:5, function(x) x^2)
+sapply(listA, mean)
+
+sapply(trees, mean)
+
+# tapply -> operations by groups defined by a factor
+iris
+tapply(iris$Sepal.Length, iris$Species, mean)
+
+ages <- c(25, 30, 35, 40, 45, 50)
+groups <- c("A", "A", "B", "B", "C", "C")
+tapply(ages, groups, mean)
