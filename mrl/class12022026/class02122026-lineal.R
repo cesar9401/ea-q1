@@ -1,7 +1,7 @@
 library(openxlsx)
 library(ggplot2)
 
-data <- read.xlsx("mrl/minimos_cuadrados_data.xlsx", sheet = 1)
+data <- read.xlsx("mrl/class12022026/minimos_cuadrados_data.xlsx", sheet = 1)
 # ggplot(data, aes(x = Edad, y = Resistencia)) +
 #   geom_point() +
 #   theme_linedraw()

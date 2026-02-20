@@ -5,7 +5,7 @@
 library(openxlsx)
 library(ggplot2)
 
-data <- read.xlsx("mrl/Estatura.xlsx", sheet = 1)
+data <- read.xlsx("mrl/class12022026/Estatura.xlsx", sheet = 1)
 ggplot(data, aes(x = Edad, y = Estatura)) +
 geom_point() +
 theme_light() +
