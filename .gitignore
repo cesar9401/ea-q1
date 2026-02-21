@@ -60,3 +60,6 @@ rsconnect/
 
 # jetbrains
 .idea
+
+# pdf files
+*.pdf
