@@ -24,9 +24,9 @@ Variable dependiente: weight_pounds
 plot(
     data$height_inches,
     data$weight_pounds,
-    main = "Weight vs Height",
-    xlab = "Height (inches)",
-    ylab = "Weight (pounds)",
+    main = "Peso vs Altura",
+    xlab = "Altura (pulgadas)",
+    ylab = "Peso (libras)",
     pch = 19,
     col = "blue"
 )

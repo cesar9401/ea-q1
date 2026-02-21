@@ -1,6 +1,6 @@
 library(openxlsx)
-data <- read.xlsx('weight_height.xlsx')
-# data <- read.xlsx('mrl/class19022026/weight_height.xlsx')
+# data <- read.xlsx('weight_height.xlsx')
+data <- read.xlsx('mrl/class19022026/weight_height.xlsx')
 
 # a) Dibuje los puntos
 # variable independiente: height_inches
@@ -9,9 +9,9 @@ data <- read.xlsx('weight_height.xlsx')
 plot(
     data$height_inches,
     data$weight_pounds,
-    main = "Weight vs Height",
-    xlab = "Height (inches)",
-    ylab = "Weight (pounds)",
+    main = "Peso vs Altura",
+    xlab = "Altura (pulgadas)",
+    ylab = "Peso (libras)",
     pch = 19,
     col = "blue"
 )
