@@ -1,5 +1,6 @@
 # Exponencial model
 
+library(openxlsx)
 vehicles <- read.xlsx("mrl/class19022026/distancia_frenado.xlsx", sheet = 1)
 
 # plot distance vs speed
