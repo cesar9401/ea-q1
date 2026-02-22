@@ -1,6 +1,6 @@
-# Applied Statistics Master's Degree (Maestría en Estadística Aplicada)
+# Applied Statistics Master's Degree - First Quarter
 
-This repository contains examples and scripts from my master's degree classes in Applied Statistics.
+This repository contains examples and scripts from my master's degree classes in Applied Statistics, specifically for the **First Quarter**.
 
 ## Directory Structure
 
