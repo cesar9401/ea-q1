@@ -1,0 +1,81 @@
+---
+title: "Class 26022026 - Logarithmic Model"
+author: "César Tzoc Alvarado"
+date: "2026-02-26"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(openxlsx)
+```
+
+## Read data about geiser
+```{r load-data}
+geiser <- read.xlsx("geiser.xlsx", sheet = 1)
+```
+
+## Plot espera vs erupcion
+```{r plot-espera-vs-erupcion}
+plot(
+  geiser$espera,
+  geiser$erupcion,
+  main = "Espera vs Erupción del Geiser",
+  xlab = "Espera (min)",
+  ylab = "Erupción (min)",
+  pch = 19,
+  col = "blue"
+)
+```
+
+## Reciprocal model
+```{r reciprocal-model}
+geiser$reciprocal_espera <- 1 / geiser$espera
+geiser_reciprocal_model <- lm(erupcion ~ reciprocal_espera, data = geiser)
+summary(geiser_reciprocal_model)
+```
+
+## Predictions
+```{r predictions}
+geiser$predicted_reciprocal_erupcion <- predict(geiser_reciprocal_model)
+plot(
+  geiser$reciprocal_espera,
+  geiser$predicted_reciprocal_erupcion,
+  main = "Espera vs prediccción Erupción  del Geiser",
+  xlab = "Espera (min)",
+  ylab = "Predicción Erupción (min)",
+  pch = 21,
+  col = "red"
+)
+```
+
+## Define formula
+```{r define-formula}
+reciprocal_formula <- function(x) {
+    coef(geiser_reciprocal_model)[1] + coef(geiser_reciprocal_model)[2] * (1 / x)
+}
+```
+
+## Plot original vs predicted
+```{r plot-original-vs-predicted}
+plot(
+    geiser$espera,
+    geiser$erupcion,
+    main = "Espera vs Erupción del Geiser",
+    xlab = "Espera (min)",
+    ylab = "Erupción (min)",
+    pch = 19,
+    col = "blue"
+)
+par(new = T)
+plot(
+    geiser$espera,
+    reciprocal_formula(geiser$espera),
+    col = "red",
+    type = "l",
+    lwd = 1,
+    xlab = "",
+    ylab = "",
+    axes = FALSE
+)
+```

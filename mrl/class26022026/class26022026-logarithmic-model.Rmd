@@ -1,0 +1,86 @@
+---
+title: "Class 26022026 - Logarithmic Model"
+author: "César Tzoc Alvarado"
+date: "2026-02-26"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(openxlsx)
+```
+
+## Read data about geiser
+```{r load-data}
+geiser <- read.xlsx("geiser.xlsx", sheet = 1)
+```
+
+## Plot espera vs erupcion
+```{r plot-espera-vs-erupcion}
+plot(
+  geiser$espera,
+  geiser$erupcion,
+  main = "Espera vs Erupción del Geiser",
+  xlab = "Espera (min)",
+  ylab = "Erupción (min)",
+  pch = 19,
+  col = "blue"
+)
+```
+
+## Logarithmic model
+```{r logarithmic-model}
+geiser$log_espera <- log(geiser$espera)
+geiser_model <- lm(erupcion ~ log_espera, data = geiser)
+geiser_model
+```
+
+## Summary of the model
+```{r summary-of-the-model}
+summary(geiser_model)
+```
+
+## Predictions
+```{r predictions}
+geiser$predicted_erupcion <- predict(geiser_model)
+plot(
+  geiser$log_espera,
+  geiser$predicted_erupcion,
+  main = "Espera vs prediccción Erupción  del Geiser",
+  xlab = "Espera (min)",
+  ylab = "Predicción Erupción (min)",
+  pch = 21,
+  col = "red"
+)
+```
+
+## Define formula
+```{r define-formula}
+formula <- function(x) {
+  coef(geiser_model)[1] + coef(geiser_model)[2] * log(x)
+  # geiser_model$coefficients[[1]] + geiser_model$coefficients[[2]] * log(x)
+}
+```
+
+## Plot original vs predicted
+```{r plot-original-vs-predicted}
+plot(
+  geiser$espera,
+  geiser$erupcion,
+  main = "Espera vs Erupción del Geiser",
+  xlab = "Espera (min)",
+  ylab = "Erupción (min)",
+  pch = 19,
+  col = "red"
+)
+par(new = T)
+plot(
+  geiser$espera,
+  formula(geiser$espera),
+  col = 'blue',
+  type = 'l',
+  lwd = 1,
+  xlab = "", ylab = "", axes = FALSE
+)
+
+```

@@ -1,0 +1,122 @@
+---
+title : "Clase 26/02/2026 - Laboratorio 4"
+author: "César Tzoc Alvarado - Grupo 10"
+date: "26/02/2026"
+output: html_document
+---
+
+```{r setup, include = F}
+knitr::opts_chunk$set(echo = TRUE)
+library(openxlsx)
+```
+
+## Leer datos
+```{r, read-data}
+data <- read.xlsx("mrl/class26022026/laboratory4.xlsx", sheet = 1)
+data
+```
+
+### a) Dibuje los puntos
+```{r, plot-points}
+plot(
+  data$altura,
+  data$peso,
+  main = "Altura vs Peso",
+  xlab = "Altura",
+  ylab = "Peso",
+  pch = 19,
+  col = 'red'
+)
+```
+
+### b) Aplique regresión simple, para construir un modelo logaritmico
+```{r, logarithmic-model}
+data$log_altura <- log(data$altura)
+log_model <- lm(peso ~ log_altura, data = data)
+summary(log_model)
+```
+
+### c) Determine los coeficientes del modelo logaritmico
+```{r, coeficientes-log-model}
+cat("Intercepto: ", coef(log_model)[1], "\n")
+cat("Pendiente: ", coef(log_model)[2], "\n")
+```
+
+### d) Construya la formula del modelo logaritmico
+```{r, log-formula}
+log_formula <- function(x) {
+  coef(log_model)[1] + coef(log_model)[2] * log(x)
+}
+```
+
+### e) Dibuje los puntos y gráfica del modelo logaritmico
+```{r, plot-points-log-model}
+plot(
+  data$altura,
+  data$peso,
+  main = "Altura vs Peso (Modelo Logaritmico)",
+  xlab = "Altura",
+  ylab = "Peso",
+  pch = 19,
+  col = 'red'
+)
+par(new = T)
+plot(
+    data$altura,
+    log_formula(data$altura),
+    col = 'blue',
+    type = 'l',
+    lwd = '1',
+    main = "",
+    xlab = "",
+    ylab = "",
+    axes = F
+)
+```
+
+### g) Construya un modelo reciproco y repita los incisos del a) al f)
+
+#### Construir modelo reciproco
+```{r, reciprocal-model}
+data$reciprocal_altura <- 1 / data$altura
+reciprocal_model <- lm(peso ~ reciprocal_altura, data = data)
+summary(reciprocal_model)
+```
+
+#### Determine los coeficientes del modelo reciproco
+```{r, coeficientes-reciprocal-model}
+cat("Intercepto: ", coef(reciprocal_model)[1], "\n")
+cat("Pendiente: ", coef(reciprocal_model)[2], "\n")
+```
+
+#### Construya la formula del modelo reciproco
+```{r, reciprocal-formula}
+recriprocal_formula <- function(x) {
+  coef(reciprocal_model)[1] + coef(reciprocal_model)[2] * 1 / x
+}
+```
+
+#### Dibuje los puntos y gráfica del modelo reciproco
+```{r, plot-points-reciprocal-model}
+plot(
+  data$altura,
+  data$peso,
+  main = "Altura vs Peso (Modelo Reciproco)",
+  xlab = "Altura",
+  ylab = "Peso",
+  pch = 19,
+  col = 'red'
+)
+par(new = T)
+plot(
+    data$altura,
+    recriprocal_formula(data$altura),
+    col = 'blue',
+    type = 'l',
+    lwd = '1',
+    main = "",
+    xlab = "",
+    ylab = "",
+    axes = F
+)
+```
