@@ -13,7 +13,7 @@ This repository contains R scripts for statistical analysis and data manipulatio
 ## 2. Environment & Dependencies
 
 -   **Language**: R
--   **Key Libraries**: `ggplot2`, `readr`, `readxl`, `writexl`.
+-   **Key Libraries**: `ggplot2`, `readr`, `readxl`, `writexl`, `here`.
 -   **Package Installation**:
     -   Packages are typically installed via `install.packages("package_name")` inside scripts (often commented out) or in an interactive session.
     -   *Agent Note*: Do not uncomment `install.packages()` calls in scripts unless explicitly instructed. Assume standard packages are available or ask the user to install them.
@@ -83,7 +83,7 @@ Adhere to the [Tidyverse style guide](https://style.tidyverse.org/) where possib
 ### Imports
 -   Load libraries at the very top of the script using `library()`.
 -   Avoid `require()` unless strictly necessary.
--   Do not use absolute paths for file I/O; use paths relative to the project root.
+-   Do not use absolute paths for file I/O. Use the `here` package with paths relative to the project root (e.g., `here("path/to/file")`).
 
 ### Error Handling
 -   Use `tryCatch()` for robust error handling in functions that might fail (e.g., file I/O, network requests).
@@ -102,7 +102,7 @@ Adhere to the [Tidyverse style guide](https://style.tidyverse.org/) where possib
 
 ## 5. Agent Instructions
 
--   **File Paths**: Always use paths relative to the project root (e.g., `se/demo.xlsx`).
+-   **File Paths**: Always use the `here` package with paths relative to the project root (e.g., `here("se/demo.xlsx")`).
 -   **Data Generation**: When creating examples, use `set.seed()` to ensure reproducibility.
 -   **Visualizations**: When using `ggplot2`, prefer `theme_minimal()` or `theme_light()` for a clean look, as seen in `mep/mep_normal_distribution.R`.
 -   **Modifications**: When modifying existing scripts, preserve the existing style and variable naming conventions. Do not reformat the entire file unless asked.

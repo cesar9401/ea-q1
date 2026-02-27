@@ -7,7 +7,6 @@ output: html_document
 
 ```{r setup, include = F}
 knitr::opts_chunk$set(echo = TRUE)
-knitr::opts_knit$set(root.dir = "../../") # set working directory to project root
 library(openxlsx)
 library(here)
 ```
