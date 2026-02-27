@@ -1,6 +1,7 @@
 library(openxlsx)
-# data <- read.xlsx('weight_height.xlsx')
-data <- read.xlsx('mrl/class19022026/weight_height.xlsx')
+library(here)
+
+data <- read.xlsx(here('mrl/class19022026/weight_height.xlsx'))
 
 # a) Dibuje los puntos
 # variable independiente: height_inches

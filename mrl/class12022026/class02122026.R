@@ -1,11 +1,13 @@
 # intall packages only first time
 # install.packages("openxlsx")
 # install.packages('ggplot2')
+# install.packages('here')
 
 library(openxlsx)
 library(ggplot2)
+library(here)
 
-data <- read.xlsx("mrl/class12022026/Estatura.xlsx", sheet = 1)
+data <- read.xlsx(here("mrl/class12022026/Estatura.xlsx"), sheet = 1)
 ggplot(data, aes(x = Edad, y = Estatura)) +
 geom_point() +
 theme_light() +

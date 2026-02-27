@@ -1,7 +1,8 @@
 library(openxlsx)
 library(ggplot2)
+library(here)
 
-sales <- read.xlsx("mrl/class12022026/sales_data.xlsx", sheet = 1)
+sales <- read.xlsx(here("mrl/class12022026/sales_data.xlsx"), sheet = 1)
 
 # dispersion plot
 ggplot(sales, aes(x = Ventas, y = Renta)) +

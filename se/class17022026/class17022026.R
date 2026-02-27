@@ -36,20 +36,22 @@ df_from_list
 # installing packages
 # install.packages("readr")
 # install.packages("readxl")
-install.packages("writexl")
+# install.packages("writexl")
+# install.packages('here')
 library(readr)
 library(readxl)
 library(writexl)
+library(here)
 
 # read excel file
-data <- read_excel("se/class17022026/demo.xlsx", sheet = "Sheet1")
+data <- read_excel(here("se/class17022026/demo.xlsx"), sheet = "Sheet1")
 data$Country
 
 # exportar txt files
-write.table(df_from_list, 'se/class17022026/export.txt', row.names = FALSE, col.names = TRUE, sep = ",")
+write.table(df_from_list, here('se/class17022026/export.txt'), row.names = FALSE, col.names = TRUE, sep = ",")
 
 # export to excel file
-write_xlsx(df_from_list, "se/class17022026/export_excel.xlsx")
+write_xlsx(df_from_list, here("se/class17022026/export_excel.xlsx"))
 
 # apply functions
 

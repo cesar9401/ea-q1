@@ -8,11 +8,12 @@ output: pdf_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(openxlsx)
+library(here)
 ```
 
 ## Read data about geiser
 ```{r load-data}
-geiser <- read.xlsx("geiser.xlsx", sheet = 1)
+geiser <- read.xlsx(here("mrl/class26022026/geiser.xlsx"), sheet = 1)
 ```
 
 ## Plot espera vs erupcion

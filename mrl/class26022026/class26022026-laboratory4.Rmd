@@ -9,11 +9,12 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 knitr::opts_knit$set(root.dir = "../../") # set working directory to project root
 library(openxlsx)
+library(here)
 ```
 
 ## Leer datos
 ```{r, read-data}
-data <- read.xlsx("mrl/class26022026/laboratory4.xlsx", sheet = 1)
+data <- read.xlsx(here("mrl/class26022026/laboratory4.xlsx"), sheet = 1)
 data
 ```
 

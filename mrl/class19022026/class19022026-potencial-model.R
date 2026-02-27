@@ -1,6 +1,8 @@
 # multiplicative potential model
 library(openxlsx)
-vehicles <- read.xlsx("mrl/class19022026/distancia_frenado.xlsx", sheet = 1)
+library(here)
+
+vehicles <- read.xlsx(here("mrl/class19022026/distancia_frenado.xlsx"), sheet = 1)
 
 vehicles$log_distance <- log(vehicles$distancia)
 vehicles$log_velocity <- log(vehicles$velocidad)
