@@ -7,6 +7,7 @@ output: html_document
 
 ```{r setup, include = F}
 knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_knit$set(root.dir = "../../") # set working directory to project root
 library(openxlsx)
 ```
 
@@ -66,7 +67,7 @@ plot(
     log_formula(data$altura),
     col = 'blue',
     type = 'l',
-    lwd = '1',
+    lwd = 1,
     main = "",
     xlab = "",
     ylab = "",
@@ -91,7 +92,7 @@ cat("Pendiente: ", coef(reciprocal_model)[2], "\n")
 
 #### Construya la formula del modelo reciproco
 ```{r, reciprocal-formula}
-recriprocal_formula <- function(x) {
+reciprocal_formula <- function(x) {
   coef(reciprocal_model)[1] + coef(reciprocal_model)[2] * 1 / x
 }
 ```
@@ -110,10 +111,10 @@ plot(
 par(new = T)
 plot(
     data$altura,
-    recriprocal_formula(data$altura),
+    reciprocal_formula(data$altura),
     col = 'blue',
     type = 'l',
-    lwd = '1',
+    lwd = 1,
     main = "",
     xlab = "",
     ylab = "",
