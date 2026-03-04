@@ -1,0 +1,192 @@
+---
+title: "Class 03032026"
+author: César Tzoc Alvarado
+date: "03/03/2026"
+output: html_document
+---
+
+```{r setup, include = F}
+knitr::opts_chunk$set(echo = TRUE)
+
+# install.packages('dplyr')
+# install.packages('datos')
+library(datos)
+library(dplyr)
+library(tidyr)
+```
+
+### Leer de mtcars
+```{r}
+mtcars
+```
+### Seleccionar del conjunto mtcars desde hp hasta wp y que no tome en cuenta qsec
+```{r}
+mtcars %>%
+  select(hp:am, -qsec) %>%
+  head(6)
+```
+
+### Seleccionar las millas por galón, seleccionar la column 4 y seleccionar la última columna y que imprima los últimos 4 valores
+```{r}
+mtcars %>%
+  select(mpg, 4, ncol(mtcars)) %>%
+  tail(4)
+```
+
+```{r}
+starwars %>%
+  select(contains("color")) %>%
+  head(10)
+```
+
+## filter
+Filtra filas según condiciones
+```{r}
+mtcars %>%
+  select(mpg, hp) %>%
+  filter(hp > 100) %>%
+  head(5)
+```
+
+```{r}
+mtcars %>%
+  select(cyl, hp, mpg) %>%
+  filter(cyl == 6 | cyl == 8)
+```
+
+```{r}
+mtcars %>%
+  select(cyl, hp, mpg) %>%
+  filter(cyl %in% c(6, 8))
+```
+
+## arrange
+Ordena datos y filas pero no columnas
+```{r}
+mtcars %>%
+  select(mpg, hp) %>%
+  arrange(mpg, hp) %>%
+  head(10)
+```
+
+```{r}
+mtcars %>%
+  select(mpg, hp) %>%
+  arrange(desc(mpg)) %>%
+  head(10)
+```
+
+## summarize
+Realiza resumenes de datos, reduciendo el dataframe a una sola fila
+```{r}
+mtcars %>%
+  summarise(
+    N = n(),
+    mpg_mean = mean(mpg),
+    mpg_sd = sd(mpg)
+  )
+```
+
+## mutate
+Crea nuevas columnas a partir de las existentes
+```{r}
+mtcars %>%
+  mutate(kpg = mpg * 1.60934) %>%
+  head(10)
+```
+
+```{r}
+mtcars %>%
+  mutate(Rm = hp / disp) %>%
+  select(mpg, hp, disp, Rm) %>%
+  arrange(desc(Rm))
+```
+
+## Ejemplos
+
+### Seleccionar columnas estado civil, raza, religion y horas tv
+```{r}
+encuesta %>%
+  select(estado_civil, raza, religion, horas_tv) %>%
+  head(10)
+```
+
+### Filtrar por religion y calcular la media de horas tv
+```{r}
+encuesta %>%
+  filter(religion == 'Judía') %>%
+  summarise(horas_tv_mean = mean(horas_tv, na.rm = T))
+```
+
+```{r}
+encuesta %>%
+  select(estado_civil, raza, religion, horas_tv) %>%
+  filter(religion %in% c('Ninguna', 'Otra', 'Other')) %>%
+  summarise(horas_tv_mean = mean(horas_tv, na.rm = T))
+```
+
+## Union de tablas
+```{r}
+df1 <- band_members
+df2 <- band_instruments
+```
+```{r}
+df1 %>%
+  left_join(df2)
+```
+
+```{r}
+df1 %>%
+  right_join(df2)
+```
+
+```{r}
+df1 %>%
+  full_join(df2)
+```
+
+```{r}
+df1 %>%
+  inner_join(df2)
+```
+
+```{r}
+df1 %>%
+  semi_join(df2)
+```
+
+```{r}
+df1 %>%
+  anti_join(df2)
+```
+
+```{r}
+df3 <- band_instruments2
+df1 %>%
+  inner_join(df3, by = c("name" = "artist"))
+```
+
+## spread and gather
+
+## gather
+```{r}
+data <- data.frame(
+  ID = c(1, 2, 3),
+  enero = c(100, 150, 200),
+  febrero = c(110, 160, 210),
+  marzo = c(120, 170, 220)
+)
+
+gather(data, key = "Mes", value = "Valor", -ID)
+```
+
+## spread
+```{r}
+data1 <- data.frame(
+  ID = c(1, 1, 1, 2, 2, 2, 3, 3, 3),
+    Mes = c("enero", "febrero", "marzo", "enero", "febrero", "marzo", "enero", "febrero", "marzo"),
+  Valor = c(100, 110, 120, 150, 160, 170, 200, 210, 220)
+)
+
+spread(data1, key = "Mes", value = "Valor")
+```
