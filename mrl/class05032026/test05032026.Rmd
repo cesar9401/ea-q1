@@ -1,0 +1,108 @@
+---
+title : "Examen 05/03/2026"
+author: "César Reginaldo Tzoc Alvarado"
+date: "05/03/2026"
+output: html_document
+---
+
+```{r setup, include = F}
+# install.packages('here')
+# install.packages('openxlsx')
+
+knitr::opts_chunk$set(echo = TRUE)
+library(openxlsx)
+library(here)
+```
+
+# Pregunta 1
+
+## Instrucciones
+El archivo "solar" contiene información acerca de la calidad del aire en Nueva York. En la primera columna aparece la radiación en Ly y en la segunda la concentración de ozono en partes por millón. A partir de esta información construya un modelo exponencial que prediga la concentración en términos de la radiación Conc = f ( rad ).
+
+## Leer datos del archivo solar
+```{r, read-data}
+solar <- read.xlsx(here('mrl/class05032026/solar.xlsx'))
+head(n = 10, solar)
+```
+
+## Constuir modelo exponencial
+*Variable independiente*: radiación
+*Variable dependiente*: ozono
+```{r, build-model}
+solar$log_ozono <- log(solar$ozono)
+exponencial_model <- lm(log_ozono ~ radiacion, data = solar)
+summary(exponencial_model)
+```
+
+## 1. ¿Cuál es la intersección (intercept)?
+```{r, interseccion}
+coef(exponencial_model)[1]
+```
+
+## 2. ¿Cuál es la pendiente?
+```{r, slope}
+coef(exponencial_model)[2]
+```
+
+## 3. ¿Cuánto vale el coeficiente de R cuadrado ajustado?
+```{r, r-squared}
+summary(exponencial_model)$adj.r.squared
+```
+
+## A continuación construya el modelo potencial con los mismos datos, y responda las siguientes preguntas:
+```{r, build-model-potential}
+# solar$log_ozono <- log(solar$ozono)
+solar$log_radiacion <- log(solar$radiacion)
+potencial_model <- lm(log_ozono ~ log_radiacion, data = solar)
+summary(potencial_model)
+```
+
+## 4. ¿Cuál es la intersección (intercept)?
+```{r}
+coef(potencial_model)[1]
+```
+
+## 5. ¿Cuál es la pendiente?
+```{r}
+coef(potencial_model)[2]
+```
+
+## 6. ¿Cuánto vale el coeficiente de R cuadrado ajustado?
+```{r}
+summary(potencial_model)$adj.r.squared
+```
+
+# Pregunta 2
+Defina el conjunto de datos {1, 2, 3, 4, 5, 6} en un vector "a" y defina el conjunto de datos {4, 7, 10, 15, 18, 20} en un vector "b". A continuación concatene los vector en una matriz "m".
+
+### a) ¿Cuál de los siguientes comandos permite concatenar los vectores en una matriz m (coloque el vector "a" en la primera columna)?
+```{r}
+a <- c(1, 2, 3, 4, 5, 6)
+b <- c(4, 7, 10, 15, 18, 20)
+
+m <- matrix(c(a, b), nrow = 6)
+```
+
+### b) ¿Qué comando permite dibujar los elementos de "m" como pares ordenados?
+```{r}
+m1 <- matrix(c(a, b), nrow = 6)
+plot(a, b)
+```
+
+### A continuación aplique regresión simple con "a" como variable independiente y "b" como variable dependiente. Luego utilice el comando Summary para determinar:
+#### c) La pendiente del modelo lineal:
+#### d) La intersección:
+```{r}
+lineal_model <- lm(b ~ a)
+summary(lineal_model)
+cat("Interseccion: ", coef(lineal_model)[1], "\n")
+cat("Pendiente: ", coef(lineal_model)[2], "\n")
+```
+
+# Pregunta 3
+
+```{r}
+b <- c(4, 7, 10, 15, 18, 20)
+length(b)
+mean(b)
+```
