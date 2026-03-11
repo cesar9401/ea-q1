@@ -1,0 +1,223 @@
+---
+title: "Class 10032026"
+author: César Tzoc Alvarado
+date: "10/03/2026"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+# install.packages('ggplot2')
+# install.packages('dplyr')
+library(ggplot2)
+library(dplyr)
+library(gapminder)
+```
+
+### Definir los datos como un objeto
+```{r}
+gplot <- ggplot(data = iris, mapping = aes(x = Sepal.Length, y = Petal.Length)) +
+  geom_point(color = 'blue', size = 2, alpha = 0.4)
+```
+
+### Cambiar la estetica de color por especie y la forma
+```{r}
+gplot + geom_point(aes(color = Species, shape = Species))
+```
+
+### Cambiar la estetica segun la transparencia
+```{r}
+gplot + geom_point(aes(alpha = Species))
+```
+
+### Cambiar la estetica con geometria de lineas
+```{r}
+gplot + geom_line(aes(linetype = Species))
+```
+
+### Cambio de estetica de color para variables continuas
+```{r}
+gplot + geom_point(aes(color = "Petal.Width"))
+```
+
+### Convertir a factor la variable Petal.Widht
+```{r}
+gplot + geom_point(aes(shape = factor(Petal.Width)))
+```
+
+### Cambio en la estetica de los datos
+```{r}
+ggplot(iris, aes(x = Sepal.Length, y = Petal.Length, color = Petal.Length, shape = Species)) +
+  geom_point(size = 2) +
+  geom_smooth()
+```
+
+### Escalas
+Para modificar las escalas del grafico
+- **scale_color_discrete():** categoria
+- **scale_fill_discrete():** relleno
+- **scale_shape():** formas de puntos
+- **scale_linetype():** lineas
+- **scale_size():** escala en eje x
+- **scale_x_continuous():** escala en eje x
+- **scale_y_continuous():** escala en eje y
+
+```{r}
+ggplot(iris, aes(x = Sepal.Length, y = Petal.Length, color = Species)) +
+  geom_point() +
+  scale_color_discrete("Species", type = c("orange", "brown", "salmon")) +
+  scale_x_continuous("Longitud del Sépalo") +
+  scale_y_continuous("Longitud del Pétalo") +
+  labs(
+    title = "Gráfico de dispersión de la longitud del sépalo y pétalo por especie",
+    subttitle = "Longitud del sépalo en el eje x y longitud del pétalo en el eje y",
+    caption = "Fuente: Conjunto de datos iris"
+  )
+```
+
+## Graficar histograma con la esperanza de vida del año 2007
+```{r}
+head(gapminder)
+```
+
+```{r}
+gapminder %>%
+  filter(year == 2007) %>%
+  ggplot(aes(x = lifeExp)) +
+  geom_histogram(bins = 30, fill = "lightblue", color = "black")
+```
+
+### Histograma en terminos de densidad o probabilidad
+```{r}
+gapminder %>%
+  filter(year == 2007) %>%
+  ggplot(aes(x = lifeExp, y = after_stat(density))) +
+  geom_histogram(bins = 30, fill = "orange", color = "black")
+```
+
+### Histograma de iris con colores por especie
+```{r}
+ggplot(iris, aes(x = Petal.Length, y = after_stat(density))) +
+  geom_histogram(fill = 'blue', color = 'black', bins = 15)
+```
+
+```{r}
+ggplot(iris, aes(x = Petal.Length, y = after_stat(density)), fill = Species) +
+  geom_histogram(color = 'black', bins = 20)
+```
+
+
+```{r}
+ggplot(iris, aes(x = Petal.Length, y = after_stat(density), fill = Species)) +
+  geom_histogram(color = 'black', bins = 20) +
+  scale_fill_manual(values = c("orange", "yellow", "lightblue"))
+```
+
+### Posicion dodge
+```{r}
+ggplot(iris, aes(x = Petal.Length, y = after_stat(density), fill = Species)) +
+  geom_histogram(color = 'black', bins = 20, position = 'dodge') +
+  scale_fill_manual(values = c("orange", "yellow", "lightblue"))
+```
+
+### Posicion fill
+Las barras son normalizadas a proporciones con altura 1
+```{r}
+ggplot(iris, aes(x = Petal.Length, y = after_stat(density), fill = Species)) +
+  geom_histogram(color = 'black', bins = 20, position = 'fill') +
+  scale_fill_manual(values = c("orange", "yellow", "lightblue"))
+```
+
+### Posicion stack
+```{r}
+ggplot(iris, aes(x = Petal.Length, y = after_stat(density), fill = Species)) +
+  geom_histogram(color = 'black', bins = 20, position = 'stack') +
+  scale_fill_manual(values = c("orange", "yellow", "lightblue"))
+```
+
+### boxplot o grafico de cajas
+### Graficar longitud de petalo
+```{r}
+ggplot(iris, aes(x = Petal.Length)) +
+  geom_boxplot()
+```
+
+### boxplot según especies
+```{r}
+ggplot(iris, aes(x = Petal.Length, y = Species)) +
+  geom_boxplot()
+
+ggplot(iris, aes(y = Petal.Length, x = Species)) +
+  geom_boxplot()
+```
+
+### Mapeo por color o relleno de cada especie
+```{r}
+ggplot(iris, aes(x = Petal.Length, y = Species, fill = Species)) +
+  geom_boxplot()
+```
+
+```{r}
+ggplot(iris, aes(x = Petal.Length, y = Species, fill = Species)) +
+  geom_boxplot(, outlier.color = 'red')
+```
+
+### Boxplot para gapminder, tomando a "y" como esperanza de vida y "x" como pais
+```{r}
+ggplot(gapminder, aes(x = country, y = lifeExp)) +
+  geom_boxplot()
+```
+
+### Nombre de cada pais de forma vertical
+```{r}
+ggplot(gapminder, aes(x = country, y = lifeExp, fill = continent)) +
+  geom_boxplot() +
+  labs(x = "pais", y = "esperanza de vida") +
+  theme(axis.text.x = element_text(angle = 90))
+```
+
+### Grafico de barras: geom_bar(), geom_col()
+```{r}
+head(mpg)
+```
+
+### diferentes propiedades dentro de cada clase
+```{r}
+ggplot(mpg, aes(x = class)) +
+  geom_bar()
+
+ggplot(mpg, aes(x = class)) +
+  geom_bar(aes(fill = manufacturer))
+```
+
+### Grafico de barras con valores predefinidos
+```{r}
+ventas <- data.frame(
+  mes = c("enero", "febrero", "marzo", "abril", "mayo", "junio", "julio"),
+  ventas = c(300, 450, 600, 400, 700, 550, 800)
+)
+
+ggplot(ventas, aes(x = mes, y = ventas)) +
+  geom_col(fill = "lightblue", color = "black") +
+  labs(x = "Mes", y = "Ventas", title = "Ventas mensuales") +
+  theme_minimal()
+```
+
+### Grafico de lineas o curvas
+```{r}
+ggplot(mtcars, aes(x = wt, y = mpg)) +
+  geom_line()
+```
+
+### Cambio de estetica de color, tipo de linea, grosor
+```{r}
+ggplot(mtcars, aes(x = wt, y = mpg)) +
+  geom_line(color = 'blue', linetype = 2, linewidth = 1)
+```
+
+## Grafico de estetica de color, size, typeline por cilindro
+```{r}
+ggplot(mtcars, aes(x = wt, y = mpg, color = as.factor(cyl))) +
+        geom_line()
+```
