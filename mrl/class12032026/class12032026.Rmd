@@ -1,0 +1,112 @@
+---
+title : "Clase 12/03/2026"
+author: "César Reginaldo Tzoc Alvarado"
+date: "12/03/2026"
+output: html_document
+---
+
+```{r setup, include = F}
+# install.packages('here')
+# install.packages('openxlsx')
+# install.packages("MPV")
+# install.packages('corrplot')
+# install.packages('scatterplot3d')
+# install.packages('rgl')
+# install.packages('forecast')
+
+knitr::opts_chunk$set(echo = TRUE)
+options(rgl.printRglwidget = TRUE)
+
+library(openxlsx)
+library(here)
+library(MPV)
+library(ggplot2)
+library(GGally)
+library(corrplot)
+library(scatterplot3d)
+library(rgl)
+library(forecast)
+```
+
+## Ejemplo 1
+```{r}
+colnames(softdrink) <- c("time", "quantity", "distance")
+head(softdrink)
+```
+
+```{r}
+ggpairs(softdrink)
+```
+
+```{r}
+corrplot(cor(softdrink), diag = F)
+```
+
+```{r}
+attach(softdrink)
+scatterplot3d(
+  x = quantity,
+  y = distance,
+  z = time,
+  pch = 16,
+  cex.lab = 1,
+  highlight.3d = TRUE,
+  type = "h",
+  xlab = "Cantidad de cajas",
+  ylab = "Distancia (pies)",
+  zlab = "Tiempo (min)"
+)
+```
+
+```{r}
+plot3d(
+  x = quantity,
+  y = distance,
+  z = time,
+  type = "s",
+  col = "pink",
+  xlab = "Cantidad de cajas",
+  ylab = "Distancia (pies)",
+  zlab = "Tiempo (min)"
+)
+```
+
+```{r}
+model <- lm(time ~ quantity + distance, data = softdrink)
+summary(model)
+```
+
+```{r}
+predict(model, newdata = data.frame(quantity = 7, distance = 560))
+```
+
+```{r}
+checkresiduals(model)
+```
+
+## Ejemplo 2
+```{r}
+head(airquality)
+```
+
+```{r}
+ggpairs(airquality)
+```
+
+```{r}
+cor(airquality, use="complete.obs")
+```
+
+```{r}
+corrplot(cor(airquality, use="complete.obs"), diag = F)
+```
+
+```{r}
+
+airquality_model <- lm(Wind ~ Temp + Solar.R + Ozone, data = airquality)
+summary(airquality_model)
+```
+
+```{r}
+checkresiduals(airquality_model)
+```
