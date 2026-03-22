@@ -1,0 +1,103 @@
+---
+title: "Class 17032026"
+author: César Tzoc Alvarado
+date: "17/03/2026"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+# install.packages('ggplot2')
+# install.packages('dplyr')
+# install.packages('flexdashboard')
+
+library(ggplot2)
+library(dplyr)
+library(gapminder)
+# library(flexdashboard)
+# library(shiny)
+```
+
+```{r}
+p <- ggplot(mtcars, aes(y = mpg, x = wt, color = as.factor(cyl))) +
+  geom_point(size = 3)
+p
+```
+
+```{r}
+p + facet_wrap(~gear)
+```
+
+### Dividido por carburadores
+```{r}
+p + facet_wrap(~carb)
+```
+
+### Dividido por cilindros
+```{r}
+p + facet_wrap(~cyl)
+```
+
+```{r}
+ggplot(mpg, aes(x = displ, y = hwy, color = class)) +
+  geom_point() +
+  facet_wrap(~class)
+```
+
+```{r}
+ggplot(mpg, aes(x = displ, y = hwy, color = class)) +
+  geom_point() +
+  facet_wrap(drv ~ cyl)
+```
+
+### Boxplot de mtcars
+```{r}
+mtcars$am <- factor(mtcars$am, labels = c("Automatic", "Manual"))
+ggplot(mtcars, aes(x = factor(cyl), y = mpg, fill = factor(cyl))) +
+  geom_boxplot() +
+  facet_grid(~am) +
+  labs(title = 'Milaje por tipo de transmisión')
+```
+
+### Theme
+Apariencia no relacionada con los datos
+
+```{r}
+q <- ggplot(mtcars, aes(x = wt, y = mpg, color = as.factor(cyl))) +
+  geom_point() +
+  labs(title = 'Gráfico mtcars', x = 'peso', y = 'millas por galón')
+```
+
+```{r}
+q + theme_gray()
+```
+
+```{r}
+q + theme_bw()
+```
+
+```{r}
+q + theme_minimal()
+```
+
+```{r}
+q + theme_dark()
+```
+
+### Personalizar texto
+```{r}
+q + theme(
+  plot.title = element_text(size = 20, face = "bold", color = "blue"),
+  axis.title.x = element_text(size = 14, face = "italic", color = "red"),
+  axis.title.y = element_text(size = 14, face = "italic", color = "red")
+)
+```
+
+### Personalizar fondn
+```{r}
+q + theme(
+    panel.background = element_rect(fill = "lightblue"),
+    plot.background = element_rect(fill = "lightyellow")
+)
+```
