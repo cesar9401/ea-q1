@@ -1,0 +1,93 @@
+---
+title: "Class 24032026"
+author: César Tzoc Alvarado
+date: "24/03/2026"
+output:
+  flexdashboard::flex_dashboard:
+    theme:
+      version: 4
+---
+
+```{r setup, include=FALSE}
+# install.packages("dygraphs")
+# install.packages("plotly")
+# install.packages("DT")
+# install.packages("dplyr")
+# install.packages("crosstalk")
+# install.packages("fpp2")
+# install.packages("kableExtra")
+# install.packages("leaflet")
+
+library(dygraphs)
+library(plotly)
+library(DT)
+library(dplyr)
+library(crosstalk)
+library(leaflet)
+library(fpp2)
+library(kableExtra)
+library(readr)
+library(here)
+```
+
+# pagina1 {data-orientation=rows}
+
+### ggplot2
+
+```{r}
+p1 <- ggplot(iris, aes(x = Sepal.Length, y = Sepal.Width, color = Species)) +
+  geom_point() +
+  theme_light() +
+  labs(title = 'Relacion entre sepalos y petalos')
+
+p1
+```
+
+### plotly
+```{r}
+ggplotly(p1)
+```
+
+### dgraph
+```{r}
+dygraph(nhtemp, main = "New Heaven Temperatures") %>%
+  dyRangeSelector(dateWindow = c("1920-01-01", "1960-01-01"))
+```
+
+# pagina2 {data-orientation=rows}
+
+### tabla estatica
+```{r}
+head(iris) %>%
+  kable(digits = 2) %>%
+  kable_classic()
+```
+
+### tabla dinamica
+```{r}
+datatable(
+  iris, extensions = 'Buttons', options = list(
+    dom = 'Bfrtip',
+    buttons = c('copy', 'csv', 'excel', 'pdf', 'print')
+  )
+)
+```
+
+# pagina3 {data-orientation=rows}
+
+### mapa
+```{r}
+Escuelas <- read.csv(here('se/class24032026/Escuelas.csv')) %>%
+  slice_sample(n = 100)
+
+shared_data <- SharedData$new(Escuelas)
+
+shared_data %>%
+  leaflet() %>%
+  addTiles() %>%
+  addCircles(lat = ~Latitud, lng = ~Longitud, label = ~Direccion)
+```
+### mapa-tabla
+```{r}
+datatable(shared_data)
+```

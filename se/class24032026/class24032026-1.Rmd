@@ -1,0 +1,33 @@
+---
+title: "Class 24032026 - 1"
+author: César Tzoc Alvarado
+date: "24/03/2026"
+output:
+  flexdashboard::flex_dashboard:
+    theme:
+      version: 4
+    orientation: columns
+    vertical_layout: fill
+    social: menu
+runtime: shiny
+---
+
+```{r setup, include=FALSE}
+library(flexdashboard)
+library(shiny)
+library(ggplot2)
+library(DT)
+library(dplyr)
+```
+
+# IRIS
+## {.sidebar}
+```{r}
+nombres <- names(iris)
+```
+
+### Ventana 1
+### Ventana 2
+
+```{r}
+```
