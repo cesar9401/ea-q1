@@ -1,0 +1,169 @@
+---
+title: "Tarea 2"
+date: "`r Sys.Date()`"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(ggplot2)
+library(here)
+library(tidyverse)
+```
+
+# Problema 1
+```{r}
+coffee_data <- read.csv(here("se/homework2-07042026/cafe.csv"))
+head(coffee_data)
+```
+
+- Filtrar para los paises con mas de 35 observaciones.
+```{r}
+coffee_data_35 <- coffee_data %>%
+  filter(n() > 35) %>%
+  group_by(country_of_origin) %>%
+  summarise(row_count = n()) %>%
+  pull(country_of_origin)
+
+head(coffee_data_35)
+```
+- filtre el dataset café utilizando filter () el operado %in% y el resultado del inciso anterior.
+```{r}
+filter_coffee <- coffee_data %>%
+  filter(country_of_origin %in% coffee_data_35)
+
+head(filter_coffee)
+```
+
+- Hacer una tabla de resumen, agrupando por país de origen, agregar:
+  - numero de observaciones
+  - el promedio de acidez
+  - valor promedio de total de puntos redondeada al entero mas cercano
+  - limite inferior del 95% de confianza
+  - limite superior del 95% de confianza
+
+```{r}
+ls_function <- function(x) {
+  x <- na.omit(x)
+  if (length(x) < 2) {
+    return(NA)  # No se puede calcular con menos de 2 observaciones
+  }
+  t.test(x)$conf.int[2]
+}
+
+li_function <- function(x) {
+  x <- na.omit(x)
+  if (length(x) < 2) {
+    return(NA)  # No se puede calcular 2 observaciones
+  }
+  t.test(x)$conf.int[1]
+}
+
+coffee_summary <- coffee_data %>%
+  group_by(country_of_origin) %>%
+  summarise(
+    n = n(),
+    mean_cup_points = round(mean(total_cup_points, na.rm = TRUE)),
+    li = li_function(total_cup_points),
+    ls = ls_function(total_cup_points)
+  )
+
+head(coffee_summary)
+```
+
+- Recodifique los nombres de la variable país de origen
+```{r}
+coffee_summary <- coffee_summary %>%
+  mutate(country_of_origin = recode(
+    country_of_origin,
+    "United States (Hawaii)" = "Hawaii",
+    "Tanzania, United Republic Of" = "Tanzania"
+  ))
+
+head(coffee_summary)
+```
+
+- Grafico 1
+```{r}
+ggplot(coffee_summary, aes(x = country_of_origin, y = n)) +
+  geom_col(fill = 'orange') +
+  scale_x_discrete(limits = coffee_summary$country_of_origin[order(coffee_summary$n, decreasing = TRUE)]) +
+  geom_text(aes(label = n), color = "white", vjust = -1) +
+  labs(
+    title    = "Calificación de la calidad del Cafe (año 2018)",
+    subtitle = "Numero de muestras",
+    caption  = "fuente: Coffee Quality Institute (CQI)",
+    x = "País de Origen",
+    y = "Número de Observaciones"
+  ) +
+  theme(
+    axis.text.x     = element_text(angle = 90),
+    plot.title      = element_text(hjust = 0.5, size = 18, face = "bold", color = "white"),
+    axis.text       = element_text(color = "white"),
+    axis.title      = element_text(color = "white"),
+    plot.subtitle   = element_text(color = "white"),
+    plot.caption    = element_text(color = "white"),
+    plot.background = element_rect(fill = "grey40")
+  )
+```
+
+Grafico 2
+```{r}
+ggplot(coffee_summary, aes(x = country_of_origin, y = mean_cup_points)) +
+  geom_col(fill = "orange") +
+  geom_errorbar(aes(ymin = li, ymax = mean_cup_points), width = 0.3, color = "white") +
+  scale_x_discrete(limits = coffee_summary$country_of_origin[order(coffee_summary$mean_cup_points, decreasing = TRUE)]) +
+  geom_text(aes(label = mean_cup_points), color = "white", vjust = -1) +
+  labs(
+    title    = "Calificación de la calidad del Cafe (año 2018)",
+    subtitle = "Promedio de puntos por taza",
+    caption  = "fuente: Coffee Quality Institute (CQI)",
+    x = "País de Origen",
+    y = "Promedio de Puntos por Taza"
+  ) +
+  theme(
+    axis.text.x     = element_text(angle = 90),
+    plot.title      = element_text(hjust = 0.5, size = 18, face = "bold", color = "white"),
+    axis.text       = element_text(color = "white"),
+    axis.title      = element_text(color = "white"),
+    plot.subtitle   = element_text(color = "white"),
+    plot.caption    = element_text(color = "white"),
+    plot.background = element_rect(fill = "grey40")
+  )
+```
+
+## Explicación de los gráficos
+**Grafico 1**:
+Se observa el numero de muestras analizadas por pais. Mexico, Colombia y Guatemala son los paises con mayor representacion en el dataset. En total pasan el filtro de N > 35 los jsiguientes paises: Mexico, Colombia, Guatemala, Brazil, Taiwan, Hawaii, Honduras, Costa Rica, Ethiopia, Tanzania y Uganda.
+
+**Grafico 2**:
+Se observa el promedio de puntos por taza con sus intervalos de confianza al 95%. Los promedios son muy similares entre paises, alrededor de 82-83 puntos, lo que indica una calidad alta y consistente. Los paises con mas muestras (Mexico, Colombia, Guatemala) tienen intervalos de confianza mas estrechos, es decir mayor precision en la estimacion. Los paises con menos observaciones presentan intervalos mas amplios, reflejando mayor incertidumbre sobre su calidad promedio.
+
+# Problema 2
+```{r}
+coffee_countries <- coffee_data %>%
+  filter(country_of_origin %in% c("Guatemala", "Colombia", "Costa Rica", "El Salvador", "Panama")) %>%
+  select(country_of_origin, aroma, acidity, flavor, aftertaste) %>%
+  gather(key = "Cualidad", value = "Calificacion",aroma, acidity, flavor, aftertaste)
+
+ggplot(coffee_countries, aes(x = " ", y = Calificacion, color = country_of_origin, fill  = country_of_origin)) +
+  geom_jitter() +
+  geom_boxplot(alpha = 0.8) +
+  facet_grid(Cualidad ~ country_of_origin) +
+  labs(
+    title    = "Calificación de la calidad del Cafe (año 2018)",
+    subtitle = "Comparacion de cualidades por pais de origen",
+    x = "",
+    y = "Calificacion"
+  ) +
+  theme(legend.position = "none") +
+  scale_fill_manual(values  = c("tomato", "cadetblue4", "orange", "deepskyblue", "coral2")) +
+  scale_color_manual(values = c("chocolate4", "brown4", "black", "darkolivegreen", "black"))
+```
+
+## Explicación del gráfico
+- Este gráfico detalla cómo se distribuyen cuatro atributos fundamentales (acidez, aroma, retrogusto y sabor) en la producción de café de cinco países: Colombia, Costa Rica, El Salvador, Guatemala y Panamá.
+- Las calificaciones se sitúan entre los 7 y 8.5 puntos. Esta concentración refleja que la región mantiene un estándar de calidad alto y bastante uniforme en todos los criterios evaluados.
+- Representatividad de los Datos: * Guatemala y Colombia aportan el mayor volumen de muestras, lo que otorga a sus resultados una mayor solidez estadística.
+- En cambio, Panamá y El Salvador presentan menos registros, lo que genera una dispersión más evidente en sus puntos de datos.
