@@ -1,0 +1,83 @@
+---
+title: "class26032026"
+date: "26032026"
+output: html_document
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+# install.packages('remotes')
+# install.packages('model')
+# remotes::install_github('fhernanb/model')
+# install.packages('MPV')
+
+library(model)
+library(remotes)
+library(openxlsx)
+library(here)
+library(MPV)
+library(MASS)
+```
+
+```{r}
+data <- read.xlsx(here('mrl/class26032026/minimos_cuadrados.xlsx'));
+head(data)
+```
+
+## Modelo
+p-value < 0.05 -> Se rechaza la hipotesis nula. En otras palabras, la variable si es significativa.
+```{r}
+model <- lm(Resistencia~Edad, data = data)
+summary(model)
+```
+
+### Ejemplo:
+Nuevamente tomando el ejemplo en donde se ajustaró un modelo deregresión lineal simple para explicar la Resistencia de una soldadura en funciónde la Edad de la misma.
+El proveedor de la soldadura afirma que la resistencia media parasoldaduras nuevas es 2700 psi. Pruebe la hipótesis de que la resistencia media esdiferente a un nivel de significancia del 5%.
+Se plantea el siguiente conjunto de hipotesis:
+- H_0: B_0 = 2700 psi
+- H_1: B_0 != 2700 psi
+
+Hay suficiente evidencia para pensar que la resistencia media de una soldadura es 2700 psi.
+```{r}
+# beta_test(object = model, parm = '(Intercept)', value = 2700, alternative = 'greater')
+beta_test(object=model, parm='(Intercept)', ref.value=2700, alternative='two.sided')
+```
+
+
+```{r}
+colnames(softdrink) <- c('tiempo', 'cantidad', 'distancia')
+model2 <- lm(tiempo~cantidad + distancia, data = softdrink)
+summary(model2)
+```
+
+p-value < 0.05 -> Se rechaza la hipotesis nula. Por lo tanto, el coeficiente de distancia o el coeficiente de cantidad es diferente de cero.
+```{r}
+anova_table_lm(model2)
+```
+
+
+### Ejemplo:
+**Modelo de regresión lineal simple**
+- H_0: B_0 = 0
+- H_1: B_0 != 0
+
+p-value < 0.05 -> Se rechaza la hipotesis nula.
+Por lo tanto, el coeficiente de caballos de fuerza es diferente de cero. En otras palabras, la variable caballos de fuerza es significativa para explicar el precio del auto.
+```{r}
+lineal_model <-lm(Price~Horsepower, data = Cars93)
+anova(lineal_model)
+```
+
+Ya que p-value < 0.05, se rechaza la hipotesis nula.
+```{r}
+another_model2 <- lm(Price~Horsepower + Type, data = Cars93)
+anova(lineal_model, another_model2)
+```
+
+p-value = 0.648 -> No se rechaza la hipotesis nula.
+```{r}
+another_model3 <- lm(Price~Horsepower + Type + Weight, data = Cars93)
+anova(another_model2, another_model3)
+```
