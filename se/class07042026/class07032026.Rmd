@@ -1,0 +1,57 @@
+---
+title: "Class 07/04/2026"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(here)
+library(readxl)
+library(dplyr)
+library(tidyr)
+```
+
+### Leer los datos
+```{r}
+weight <- read_excel(here("se/class07042026/pesonacer.xlsx"), skip = 2)
+mortality_rate <- read_excel(here("se/class07042026/mortandad.xlsx"), skip = 2)
+```
+
+### Remover la columna `República`
+```{r}
+weight <- weight %>%
+  select(-República)
+
+mortality_rate <- mortality_rate %>%
+  select(-República)
+```
+
+### Transformar los datos a formato largo
+```{r}
+weight <- weight %>%
+  gather("Departamento", "Porcentaje_bajo_peso", -Año)
+
+mortality_rate <- mortality_rate %>%
+  gather("Departamento", "tasa_mortandad", -Año)
+
+summary(weight)
+summary(mortality_rate)
+```
+
+### Unir las dos tablas con full-join
+```{r}
+child_health <- weight %>%
+  full_join(mortality_rate)
+
+child_health %>%
+  group_by(Departamento) %>%
+  summarise(
+    p1 = mean(tasa_mortandad),
+    s1 = sd(tasa_mortandad),
+    p2 = mean(Porcentaje_bajo_peso),
+    s2 = sd(Porcentaje_bajo_peso)
+  ) %>%
+  print()
+```
