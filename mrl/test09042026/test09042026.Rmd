@@ -1,0 +1,120 @@
+---
+title: "Examen parcial 2"
+date: "09042026"
+output: html_document
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+if (!require("remotes")) install.packages("remotes")
+remotes::install_github
+
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(GGally)
+```
+
+### Problema 1
+A partir del conjunto de datos swiss de R, si se construye un modelo de regresión lineal múltiple en donde la Fertilidad dependen de la Agricultura, el examen, la educación, la religión y la mortalidad infantil
+a) El coeficiente de correlación ajustado para este modelo es:
+
+b) ¿Cuál es el valor de Fertilidad, cuando: Agricultura=17, Examen=15, Educación=12, Religión=9.96 y Mortalidad infantil = 22.2
+```{r}
+
+model_problem1 <- lm(
+  Fertility ~ Agriculture + Examination + Education + Catholic + Infant.Mortality,
+  data = swiss
+)
+
+# a)
+# summary(model_problem1)$adj.r.squared
+
+# b)
+predict(
+  model_problem1,
+  newdata = data.frame(
+    Agriculture = 17,
+    Examination = 15,
+    Education = 12,
+    Catholic = 9.96,
+    Infant.Mortality = 22.2
+  )
+)
+```
+
+### Problema 2
+Cargue el archivo de Excel "Datos para ejemplo de mínimos cuadrados" y llámele "datos" al conjunto de datos.
+
+Construya un modelo de regresión lineal para la Resistencia de la soldadura en términos de su Edad.
+
+Utilice las siguientes líneas para instalar el paquete "remotes"
+
+if (!require("remotes")) install.packages("remotes")
+remotes::install_github
+
+Acepte la hipótesis nula con un 95% de confianza que la resistencia media de la soldadura ("Intercept") es igual a 2600 PSI o rechácela.
+
+a. Se acepta la hipótesis nula
+b. Se rechaza la hipótesis nula
+```{r}
+minimos_caudrados_data <- read.xlsx(here('mrl/test04092026/minimos_cuadrados.xlsx'));
+minimos_caudrados_model <- lm(Resistencia~Edad, data = minimos_caudrados_data)
+
+# - H_0: B_0 = 2600 psi
+# - H_1: B_0 != 2600 psi
+beta_test(object = minimos_caudrados_model, parm = '(Intercept)', ref.value = 2600, alternative = 'two.sided')
+```
+
+### Problema 3
+El conjunto de datos swiss de R proporciona información sobre la fertilidad e indicadores socioeconómicos para cada una de las 47 provincias. Utilice la función ggpairs para relacionar la correlación de inferttilidad con cada uno de los indicadores económicos.
+```{r}
+ggpairs(swiss)
+```
+
+### Problema 4
+De la librería ggplot2 utilice el conjunto de datos diamonds. De este conjunto extraiga las variables "price" (precio), "carat" (quilataje) y "cut" (acabado).
+
+Construya el modelo de regresión lineal que incluye variables cualitativas, utilice "price" como variable dependiente y "carat" y "cut" como independientes.
+
+Luego ejecute el comando
+
+diamonds$cut <- factor(diamonds$cut, ordered = FALSE)
+
+que eliminará la jerarquía en la variable cut.
+
+A continuación, utilice el comando summary y responda las siguientes preguntas:
+
+1. Los niveles de acabado son:
+
+   - Opción múltiple 1 Pregunta 4
+   - Fair, Good, Very Good, Premium, Ideal
+   - Excellent, Good, Very Good
+   - Fair, Bad
+   - Fair, Excellent, Good
+
+2. ¿Cuánto vale el coeficiente de R cuadrado ajustado?
+3. ¿Cuál es el valor del intercepto?
+4. ¿Cuál es el coeficiente de "carat"?
+5. ¿Cuál es el coeficiente de "cutPremium"?
+```{r}
+diamonds %>%
+  group_by(cut) %>%
+  summarise(n = n())
+```
+
+```{r}
+diamonds_model <- lm(price ~ carat + cut, data = diamonds)
+diamonds$cut <- factor(diamonds$cut, ordered = FALSE)
+
+summary(diamonds_model)
+diamonds_model$coefficients[1]
+diamonds_model$coefficients[2]
+```
+
+### Problema 5
+A partir del conjunto de datos swiss de R, y el gráfico obtenido a través de corrplot, ¿Qué variable presenta una correlación fuerte positiva con Educación?
+```{r}
+corrplot(swiss)
+```
