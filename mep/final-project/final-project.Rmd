@@ -1,0 +1,139 @@
+---
+output: html_document
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(ggplot2)
+library(here)
+library(readxl)
+library(dplyr)
+```
+
+# Proyecto final: Métodos estadísticos paramétricos
+
+# Introducción
+
+Este documento presenta el proyecto final del curso **Métodos
+estadísticos paramétricos**, desarrollado en el marco de la **Universidad
+de San Carlos de Guatemala - Maestría en Estadística Aplicada**. El
+trabajo integra los principales conceptos vistos durante el curso, con un
+enfoque en la aplicación de técnicas paramétricas para el análisis e
+interpretación de datos.
+
+La docente del curso es **Lady Mariebelia Elías Estrada** y el proyecto
+es elaborado por el **Grupo 8**, conformado por:
+
+- César Reginaldo Tzoc Alvarado
+- Héctor Adolfo Son Chiché
+- Marvin Manolo Marroquín Montoya
+- Julio Fernando Ixcoy
+- Marcos Estuardo Ponciano Núñez
+- Maria Alejandra Montoya Menaldo
+
+# 1. Identificación del tema de investigación
+
+El tema de investigación consiste en la comparación entre dos procesos de
+engorde de tilapias en contexto empresarial: el método manual (control),
+utilizado actualmente, y un método automático experimental, implementado
+durante un ciclo de engorde completo desde la siembra hasta el peso de
+cosecha.
+
+Este análisis busca evaluar, mediante herramientas de estadística
+paramétrica, si la alternativa automática representa una mejora medible en
+los tiempos del proceso productivo.
+
+# 2. Pregunta de investigación
+
+¿Ha disminuido el tiempo de engorde de tilapias tras la implementación del
+modelo experimental automático?
+
+# 3. Cálculo del tamaño de la muestra
+
+La empresa objeto de estudio proporcionó un conjunto de 100 observaciones,
+distribuidas en 50 correspondientes al método manual y 50 al método
+automático experimental.
+
+Dado que esta información constituye el total de datos disponibles y no es
+posible realizar muestreo adicional, se trabajará con la muestra completa,
+asumiendo que es suficientemente representativa para el análisis
+comparativo entre ambos procesos.
+
+# 4. Recolección y análisis de datos
+
+Los datos se encuentran en el archivo `data_final_project.xlsx`. A partir de
+estos datos se realiza análisis exploratorio, cálculo de estadística
+descriptiva y validaciones visuales de supuestos para aplicar pruebas
+paramétricas.
+
+```{r load-data}
+project_data <- read_excel(here("mep", "final-project", "data_final_project.xlsx"))
+head(project_data)
+```
+
+## 4.1 Visualización de los datos
+
+Se utilizan histogramas y diagramas de caja para observar la distribución,
+la dispersión y posibles valores atípicos en cada método de engorde.
+
+```{r exploratory-plots, fig.height=4, fig.width=8}
+# TODO: process here
+```
+
+## 4.2 Estadística descriptiva (media, desviación estándar y varianza)
+
+Se calculan los estadísticos descriptivos principales para comparar el
+comportamiento central y la variabilidad de ambos métodos.
+
+```{r descriptive-stats}
+# TODO: process here
+```
+
+# 5. Aplicación de pruebas de hipótesis e intervalos de confianza
+
+Con base en la pregunta de investigación, se contrasta si existe evidencia
+estadística suficiente para afirmar que el método automático reduce el
+tiempo promedio de engorde respecto al método manual.
+
+Hipótesis propuestas:
+
+- \(H_0\): \(\mu_{automatic} \geq \mu_{manual}\)
+- \(H_1\): \(\mu_{automatic} < \mu_{manual}\)
+
+```{r hypothesis-tests}
+# process here
+```
+
+```{r confidence-interval}
+# TODO: process here
+```
+
+# 6. Resultados e interpretación
+
+Con base en el valor p obtenido y en los intervalos de confianza calculados,
+se interpreta si la evidencia respalda una reducción significativa en los
+tiempos de engorde con el método automático.
+
+En esta sección se debe redactar la conclusión en contexto empresarial,
+incluyendo implicaciones operativas para la organización.
+
+# 7. Conclusiones y recomendaciones
+
+Este proyecto permitirá determinar si la implementación del método
+automático es estadísticamente favorable frente al método manual y, en
+consecuencia, aportar recomendaciones para la toma de decisiones en la
+empresa.
+
+Como siguiente versión del informe, se incorporarán:
+
+- La interpretación final de las pruebas (decisión estadística).
+- La discusión de resultados en términos de eficiencia operativa.
+- Recomendaciones de implementación y seguimiento.
+
+```{r}
+project_data %>%
+  filter(Metodo_Alimento == "Manual") %>%
+  pull(Tiempo_Engorde) %>%
+  shapiro.test()
+```
