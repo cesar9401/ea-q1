@@ -1,17 +1,18 @@
 ---
-output: html_document
+title: "Proyecto final: Métodos estadísticos paramétricos"
+output:
+  pdf_document:
+    latex_engine: xelatex
 ---
 
 ```{r setup, include = FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
 
+library(dplyr)
 library(ggplot2)
 library(here)
 library(readxl)
-library(dplyr)
 ```
-
-# Proyecto final: Métodos estadísticos paramétricos
 
 # Introducción
 
@@ -34,134 +35,397 @@ es elaborado por el **Grupo 8**, conformado por:
 
 # 1. Identificación del tema de investigación
 
-El tema de investigación consiste en la comparación entre dos procesos de
-engorde de tilapias en contexto empresarial: el método manual (control),
-utilizado actualmente, y un método automático experimental, implementado
-durante un ciclo de engorde completo desde la siembra hasta el peso de
-cosecha.
+El tema de investigación consiste en comparar dos métodos de crecimiento y engorde de
+tilapias: **Manual** (control) y **Automatico** (experimental), con el fin
+de evaluar si el método automático reduce el tiempo de engorde.
 
-Este análisis busca evaluar, mediante herramientas de estadística
-paramétrica, si la alternativa automática representa una mejora medible en
-los tiempos del proceso productivo.
+Este análisis aplica técnicas de estadística paramétrica para respaldar una
+decisión técnica basada en evidencia.
 
 # 2. Pregunta de investigación
 
-¿Ha disminuido el tiempo de engorde de tilapias tras la implementación del
-modelo experimental automático?
+¿El método **Automatico** reduce significativamente el **Tiempo_Engorde**
+en comparación con el método **Manual**?
 
 # 3. Objetivos
 
 ## 3.1 Objetivo general
 
-> TODO: redactar objetivo general.
+Determinar, mediante pruebas estadísticas paramétricas, si el método
+Automatico disminuye el tiempo de engorde frente al método Manual.
 
 ## 3.2 Objetivos específicos
 
-> TODO: redactar objetivos específicos.
+- Describir el comportamiento de `Tiempo_Engorde` en ambos métodos.
+- Evaluar normalidad por grupo con evidencia gráfica y `shapiro.test()`.
+- Comparar varianzas entre métodos con la prueba F de Fisher.
+- Contrastar medias con prueba t de Welch bajo hipótesis unilateral.
 
 # 4. Datos y diseño del estudio
 
-Los datos se encuentran en el archivo `data_final_project.xlsx`.
+Se utiliza el archivo `data_final_project.xlsx`, con 100 observaciones y 4
+variables: `ID`, `Metodo_Alimento`, `Tiempo_Engorde` y `Peso_Final_g`.
+
+El diseño corresponde a dos muestras independientes (`Manual` y
+`Automatico`), con 50 observaciones por grupo.
 
 ```{r load-data}
-project_data <- read_excel(here("mep", "final-project", "data_final_project.xlsx"))
-head(project_data)
-```
+data_path <- here("mep", "final-project", "data_final_project.xlsx")
+sheet_name <- excel_sheets(data_path)[1]
 
-> TODO: describir fuente de datos, variables de estudio, grupos comparados y
-> diseño del análisis.
+project_data <- read_excel(data_path, sheet = sheet_name) %>%
+  mutate(
+    Metodo_Alimento = factor(Metodo_Alimento, levels = c("Manual", "Automatico"))
+  )
+
+glimpse(project_data)
+```
 
 # 5. Cálculo del tamaño de muestra (o justificación de muestra disponible)
 
-La empresa objeto de estudio proporcionó un conjunto de 100 observaciones,
-distribuidas en 50 correspondientes al método manual y 50 al método
-automático experimental.
+Se trabaja con la totalidad de datos disponibles: 100 observaciones, 50 por
+cada método. Debido a que no se realizó muestreo adicional, la muestra se
+asume representativa para el análisis comparativo del caso.
 
-Dado que esta información constituye el total de datos disponibles y no es
-posible realizar muestreo adicional, se trabajará con la muestra completa,
-asumiendo que es suficientemente representativa para el análisis
-comparativo entre ambos procesos.
+```{r sample-size-check}
+project_data %>% count(Metodo_Alimento)
+```
 
 # 6. Análisis exploratorio de datos
 
 ## 6.1 Visualización general
 
-> TODO: incluir histogramas y gráficos iniciales por método.
+Se presenta un histograma con curva de densidad para visualizar forma,
+concentración y diferencias iniciales entre métodos.
 
 ```{r exploratory-plots, fig.height=4, fig.width=8}
-# TODO: process here
+ggplot(project_data, aes(x = Tiempo_Engorde, y = after_stat(density), fill = Metodo_Alimento)) +
+  geom_histogram(bins = 12, alpha = 0.45, color = "white") +
+  geom_density(aes(color = Metodo_Alimento), alpha = 0.4, linewidth = 0.8) +
+  facet_wrap(~Metodo_Alimento, scales = "free_y") +
+  scale_fill_manual(values = c("Manual" = "#4C78A8", "Automatico" = "#72B7B2")) +
+  scale_color_manual(values = c("Manual" = "#1F4E79", "Automatico" = "#2A7F62")) +
+  labs(
+    title = "Distribución de Tiempo_Engorde por método",
+    x = "Tiempo de engorde",
+    y = "Densidad"
+  ) +
+  theme_light()
 ```
+
+Ambos métodos muestran un comportamiento aproximadamente normal en
+`Tiempo_Engorde`, con una curva de densidad teórica superpuesta que sigue
+razonablemente la forma del histograma.
 
 ## 6.2 Estadística descriptiva
 
-> TODO: incluir media, desviación estándar, varianza, mínimo y máximo por
-> grupo.
+Se resume el comportamiento de `Tiempo_Engorde` en ambos grupos.
 
 ```{r descriptive-stats}
-# TODO: process here
+summary_table <- project_data %>%
+  group_by(Metodo_Alimento) %>%
+  summarise(
+    sample_size = n(),
+    mean = mean(Tiempo_Engorde, na.rm = TRUE),
+    sd = sd(Tiempo_Engorde, na.rm = TRUE),
+    variance = var(Tiempo_Engorde, na.rm = TRUE),
+    min = min(Tiempo_Engorde, na.rm = TRUE),
+    max = max(Tiempo_Engorde, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+summary_table_es <- summary_table %>%
+  transmute(
+    `Método de alimentación` = Metodo_Alimento,
+    `Tamaño de la muestra` = sample_size,
+    `Media (días)` = round(mean, 2),
+    `Desviación estándar` = round(sd, 2),
+    `Varianza` = round(variance, 2),
+    `Mínimo` = min,
+    `Máximo` = max
+  )
+
+knitr::kable(summary_table_es, align = "lrrrrrr")
 ```
+
+Los resultados descriptivos muestran una diferencia clara entre métodos: el
+grupo **Automatico** presenta menor media de tiempo de engorde (165.18 días)
+que **Manual** (181.84 días), junto con menor variabilidad.
 
 # 7. Verificación de supuestos paramétricos
 
 ## 7.1 Detección de atípicos y dispersión (boxplot)
 
-> TODO: incluir boxplot por grupo y comentario de atípicos.
+El boxplot permite identificar valores atípicos y comparar dispersión entre
+los dos métodos.
 
 ```{r boxplot-normality}
-# TODO: process here
+ggplot(project_data, aes(x = Metodo_Alimento, y = Tiempo_Engorde, fill = Metodo_Alimento)) +
+  geom_boxplot(outlier.color = "red3", outlier.shape = 16, outlier.size = 2.2, alpha = 0.7) +
+  stat_summary(fun = mean, geom = "point", shape = 18, size = 3, color = "goldenrod") +
+  scale_fill_manual(values = c("Manual" = "#4C78A8", "Automatico" = "#72B7B2")) +
+  labs(
+    title = "Boxplot de Tiempo_Engorde por método",
+    x = "Método de alimentación",
+    y = "Tiempo de engorde"
+  ) +
+  theme_light() +
+  theme(legend.position = "none")
 ```
+
+No se evidencian valores atípicos relevantes en ninguno de los métodos, lo
+cual respalda el uso de pruebas paramétricas en el análisis comparativo.
 
 ## 7.2 Normalidad por grupo (Q-Q plot y Shapiro-Wilk)
 
-> TODO: incluir Q-Q plot para cada grupo y `shapiro.test()` por método.
+Se evalúa normalidad de `Tiempo_Engorde` por grupo con Q-Q plot y
+Shapiro-Wilk.
 
 ```{r qqplot-shapiro}
-# TODO: process here
+ggplot(project_data, aes(sample = Tiempo_Engorde)) +
+  stat_qq(color = "#1F4E79", alpha = 0.8) +
+  stat_qq_line(color = "#E45756", linewidth = 0.8) +
+  facet_wrap(~Metodo_Alimento, scales = "free") +
+  labs(title = "Q-Q plot por método") +
+  theme_light()
+
+normality_results <- project_data %>%
+  group_by(Metodo_Alimento) %>%
+  group_modify(~{
+    test <- shapiro.test(.x$Tiempo_Engorde)
+    tibble(
+      statistic_w = unname(test$statistic),
+      p_value = test$p.value
+    )
+  }) %>%
+  ungroup()
+
+normality_results
 ```
+
+En ambos grupos, los puntos se ubican de forma aproximada sobre la recta de
+referencia, lo que sugiere compatibilidad con una distribución normal
+teórica.
+
+Con los resultados de Shapiro-Wilk (`p = 0.511` para Manual y `p = 0.518`
+para Automatico), en ambos casos `p > 0.05`. Por lo tanto, no se rechaza la
+hipótesis de normalidad y el supuesto de distribución aproximadamente normal
+es razonable para continuar con pruebas paramétricas.
 
 ## 7.3 Homogeneidad de varianzas
 
-> TODO: evaluar homogeneidad de varianzas y justificar prueba inferencial
-> (Student o Welch).
+Se compara la varianza de ambos métodos con prueba F de Fisher.
+
+- \(H_0: \sigma^2_{manual} = \sigma^2_{automatico}\)
+- \(H_a: \sigma^2_{manual} \neq \sigma^2_{automatico}\)
 
 ```{r variance-homogeneity}
-# TODO: process here
+manual_data <- project_data %>%
+  filter(Metodo_Alimento == "Manual") %>%
+  pull(Tiempo_Engorde)
+
+automatic_data <- project_data %>%
+  filter(Metodo_Alimento == "Automatico") %>%
+  pull(Tiempo_Engorde)
+
+fisher_test <- var.test(
+  x = manual_data,
+  y = automatic_data,
+  alternative = "two.sided",
+  conf.level = 0.95
+)
+
+fisher_test
 ```
+
+```{r fisher-test-plot, fig.height=4, fig.width=8}
+f_stat <- unname(fisher_test$statistic)
+f_p_value <- fisher_test$p.value
+f_df1 <- unname(fisher_test$parameter[1])
+f_df2 <- unname(fisher_test$parameter[2])
+
+alpha <- 0.05
+f_lower <- qf(alpha / 2, df1 = f_df1, df2 = f_df2)
+f_upper <- qf(1 - alpha / 2, df1 = f_df1, df2 = f_df2)
+
+x_f <- seq(0.001, qf(0.999, df1 = f_df1, df2 = f_df2), length.out = 1000)
+f_plot_data <- tibble(x = x_f, y = df(x_f, df1 = f_df1, df2 = f_df2))
+
+ggplot(f_plot_data, aes(x = x, y = y)) +
+  geom_line(color = "#1F4E79", linewidth = 1) +
+  geom_area(
+    data = subset(f_plot_data, x <= f_lower),
+    fill = "#E45756",
+    alpha = 0.35
+  ) +
+  geom_area(
+    data = subset(f_plot_data, x >= f_upper),
+    fill = "#E45756",
+    alpha = 0.35
+  ) +
+  geom_vline(
+    xintercept = c(f_lower, f_upper),
+    color = "#C44E52",
+    linetype = "dashed",
+    linewidth = 0.9
+  ) +
+  geom_vline(xintercept = f_stat, color = "#F28E2B", linewidth = 1) +
+  labs(
+    title = "Prueba F de Fisher: distribución bajo H0",
+    subtitle = sprintf(
+      "F observado = %.4f | F crítico inferior = %.4f | F crítico superior = %.4f | p-value = %.5f",
+      f_stat,
+      f_lower,
+      f_upper,
+      f_p_value
+    ),
+    x = "Estadístico F",
+    y = "Densidad"
+  ) +
+  theme_light()
+```
+
+En la gráfica de la prueba F, la línea vertical sólida muestra el estadístico
+observado `r sprintf("%.4f", unname(fisher_test$statistic))`, las líneas
+verticales punteadas representan los valores críticos
+`r sprintf("%.4f", qf(0.025, df1 = unname(fisher_test$parameter[1]), df2 = unname(fisher_test$parameter[2])))`
+y
+`r sprintf("%.4f", qf(0.975, df1 = unname(fisher_test$parameter[1]), df2 = unname(fisher_test$parameter[2])))`, y las áreas
+sombreadas representan las regiones críticas bilaterales para
+\(\alpha = 0.05\). Con `p-value =`
+`r sprintf("%.5f", fisher_test$p.value)`, se rechaza \(H_0\), por lo que
+las varianzas de ambos métodos no pueden considerarse iguales.
+
+Con `F = 1.7671` y `p = 0.04891`, se rechaza \(H_0\) al nivel
+\(\alpha = 0.05\). Existe evidencia de varianzas distintas entre métodos, y
+la variabilidad del método Manual es mayor que la del Automatico. Este
+resultado respalda el uso de la prueba t de Welch para comparar medias.
 
 # 8. Pruebas de hipótesis e intervalos de confianza
 
-> TODO: declarar hipótesis nula y alternativa, seleccionar la prueba,
-> reportar estadístico, valor p, decisión e intervalo de confianza.
+Se aplica prueba t de Welch para muestras independientes con
+\(\alpha = 0.05\).
 
 ## 8.1 Formulación de hipótesis
 
-> TODO: redactar hipótesis del estudio.
+- \(H_0: \mu_{auto} \geq \mu_{manual}\)
+- \(H_a: \mu_{auto} < \mu_{manual}\)
 
 ## 8.2 Prueba de hipótesis
 
 ```{r hypothesis-tests}
-# TODO: process here
+welch_test <- t.test(
+  x = automatic_data,
+  y = manual_data,
+  alternative = "less",
+  var.equal = FALSE,
+  conf.level = 0.95
+)
+
+welch_test
 ```
+
+```{r welch-test-plot, fig.height=4, fig.width=8}
+t_stat <- unname(welch_test$statistic)
+t_df <- unname(welch_test$parameter)
+t_p_value <- welch_test$p.value
+t_alpha <- 0.05
+t_crit <- qt(t_alpha, df = t_df)
+
+x_t <- seq(qt(0.001, df = t_df), qt(0.999, df = t_df), length.out = 1000)
+t_plot_data <- tibble(x = x_t, y = dt(x_t, df = t_df))
+
+ggplot(t_plot_data, aes(x = x, y = y)) +
+  geom_line(color = "#1F4E79", linewidth = 1) +
+  geom_area(
+    data = subset(t_plot_data, x <= t_stat),
+    fill = "#E45756",
+    alpha = 0.35
+  ) +
+  geom_vline(
+    xintercept = t_crit,
+    color = "#C44E52",
+    linetype = "dashed",
+    linewidth = 0.9
+  ) +
+  geom_vline(xintercept = t_stat, color = "#F28E2B", linewidth = 1) +
+  labs(
+    title = "Prueba t de Welch: distribución t bajo H0",
+    subtitle = sprintf(
+      "t observado = %.3f | t crítico (cola izquierda, α=0.05) = %.3f | p-value = %.3e",
+      t_stat,
+      t_crit,
+      t_p_value
+    ),
+    x = "Estadístico t",
+    y = "Densidad"
+  ) +
+  theme_light()
+```
+
+En la gráfica de Welch, la región sombreada corresponde a la cola izquierda
+de la prueba unilateral (`alternative = "less"`), la línea vertical punteada
+marca el valor crítico `r sprintf("%.3f", qt(0.05, df = unname(welch_test$parameter)))`,
+y la línea sólida marca el valor observado
+`r sprintf("%.3f", unname(welch_test$statistic))`.
+Dado que `p-value = r format(welch_test$p.value, scientific = TRUE, digits = 3)`
+es extremadamente pequeño, se rechaza \(H_0\) y se confirma que
+`Tiempo_Engorde` es significativamente menor con el método **Automatico**.
+
+La prueba de Welch reporta `t = -25.794`, `df = 91.006` y
+`p-value < 2.2e-16`. Como `p < 0.05`, se rechaza \(H_0\) y se concluye que
+el método **Automatico** tiene un tiempo promedio de engorde
+significativamente menor que el método **Manual**. En el contexto del
+proyecto, el método Automatico es estadísticamente mejor en eficiencia de
+tiempo.
 
 ## 8.3 Intervalos de confianza
 
 ```{r confidence-interval}
-# TODO: process here
+ci_table <- tibble(
+  estimate_diff_auto_minus_manual = unname(welch_test$estimate[1] - welch_test$estimate[2]),
+  conf_low = welch_test$conf.int[1],
+  conf_high = welch_test$conf.int[2]
+)
+
+ci_table
 ```
+
+La diferencia estimada de medias es `Automatico - Manual = -16.66` días y el
+intervalo de confianza unilateral al 95% es `(-Inf, -15.59)`. Como todo el
+intervalo está por debajo de 0, se confirma una reducción significativa del
+tiempo de engorde con el método Automatico.
 
 # 9. Resultados e interpretación en contexto empresarial
 
-> TODO: interpretar los resultados estadísticos en términos de impacto
-> empresarial y operativo.
+La evidencia se interpreta con base en: (a) comportamiento de la
+distribución, (b) p-valores de normalidad por grupo, (c) prueba de
+igualdad de varianzas, y (d) prueba de medias de Welch.
+
+En este estudio, la evidencia converge en la misma dirección: normalidad
+razonable en ambos grupos, diferencia de varianzas y una diferencia de
+medias altamente significativa a favor del método Automatico. Para el caso de
+aplicación de **crecimiento y engorde de
+tilapias**, los resultados indican una mejora real en
+el tiempo de engorde al usar el método Automatico.
 
 # 10. Conclusiones y recomendaciones
 
-> TODO: presentar conclusiones finales y recomendaciones aplicadas al caso.
+Con base en las pruebas realizadas (Shapiro-Wilk, Fisher y Welch), se
+concluye que el método **Automatico** reduce significativamente el tiempo de
+engorde frente al método Manual en el **crecimiento y engorde de
+tilapias**.
+
+La reducción media estimada es de aproximadamente 16.66 días, con evidencia
+estadística muy fuerte (`p-value < 2.2e-16`). Se recomienda priorizar el
+método Automatico para mejorar eficiencia operativa, manteniendo monitoreo en
+futuros ciclos para validar estabilidad del beneficio.
 
 # Referencias
 
-> TODO: agregar referencias bibliográficas y metodológicas.
+- Documentación oficial de R para `shapiro.test`, `var.test` y `t.test`.
 
 # Anexo (código y tablas complementarias)
 
-> TODO: incluir material complementario (tablas extensas, salidas y código).
+Incluye el código completo de preparación, visualización y pruebas
+estadísticas ejecutadas en este informe.
