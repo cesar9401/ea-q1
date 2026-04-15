@@ -49,7 +49,29 @@ los tiempos del proceso productivo.
 ¿Ha disminuido el tiempo de engorde de tilapias tras la implementación del
 modelo experimental automático?
 
-# 3. Cálculo del tamaño de la muestra
+# 3. Objetivos
+
+## 3.1 Objetivo general
+
+> TODO: redactar objetivo general.
+
+## 3.2 Objetivos específicos
+
+> TODO: redactar objetivos específicos.
+
+# 4. Datos y diseño del estudio
+
+Los datos se encuentran en el archivo `data_final_project.xlsx`.
+
+```{r load-data}
+project_data <- read_excel(here("mep", "final-project", "data_final_project.xlsx"))
+head(project_data)
+```
+
+> TODO: describir fuente de datos, variables de estudio, grupos comparados y
+> diseño del análisis.
+
+# 5. Cálculo del tamaño de muestra (o justificación de muestra disponible)
 
 La empresa objeto de estudio proporcionó un conjunto de 100 observaciones,
 distribuidas en 50 correspondientes al método manual y 50 al método
@@ -60,80 +82,86 @@ posible realizar muestreo adicional, se trabajará con la muestra completa,
 asumiendo que es suficientemente representativa para el análisis
 comparativo entre ambos procesos.
 
-# 4. Recolección y análisis de datos
+# 6. Análisis exploratorio de datos
 
-Los datos se encuentran en el archivo `data_final_project.xlsx`. A partir de
-estos datos se realiza análisis exploratorio, cálculo de estadística
-descriptiva y validaciones visuales de supuestos para aplicar pruebas
-paramétricas.
+## 6.1 Visualización general
 
-```{r load-data}
-project_data <- read_excel(here("mep", "final-project", "data_final_project.xlsx"))
-head(project_data)
-```
-
-## 4.1 Visualización de los datos
-
-Se utilizan histogramas y diagramas de caja para observar la distribución,
-la dispersión y posibles valores atípicos en cada método de engorde.
+> TODO: incluir histogramas y gráficos iniciales por método.
 
 ```{r exploratory-plots, fig.height=4, fig.width=8}
 # TODO: process here
 ```
 
-## 4.2 Estadística descriptiva (media, desviación estándar y varianza)
+## 6.2 Estadística descriptiva
 
-Se calculan los estadísticos descriptivos principales para comparar el
-comportamiento central y la variabilidad de ambos métodos.
+> TODO: incluir media, desviación estándar, varianza, mínimo y máximo por
+> grupo.
 
 ```{r descriptive-stats}
 # TODO: process here
 ```
 
-# 5. Aplicación de pruebas de hipótesis e intervalos de confianza
+# 7. Verificación de supuestos paramétricos
 
-Con base en la pregunta de investigación, se contrasta si existe evidencia
-estadística suficiente para afirmar que el método automático reduce el
-tiempo promedio de engorde respecto al método manual.
+## 7.1 Detección de atípicos y dispersión (boxplot)
 
-Hipótesis propuestas:
+> TODO: incluir boxplot por grupo y comentario de atípicos.
 
-- \(H_0\): \(\mu_{automatic} \geq \mu_{manual}\)
-- \(H_1\): \(\mu_{automatic} < \mu_{manual}\)
+```{r boxplot-normality}
+# TODO: process here
+```
+
+## 7.2 Normalidad por grupo (Q-Q plot y Shapiro-Wilk)
+
+> TODO: incluir Q-Q plot para cada grupo y `shapiro.test()` por método.
+
+```{r qqplot-shapiro}
+# TODO: process here
+```
+
+## 7.3 Homogeneidad de varianzas
+
+> TODO: evaluar homogeneidad de varianzas y justificar prueba inferencial
+> (Student o Welch).
+
+```{r variance-homogeneity}
+# TODO: process here
+```
+
+# 8. Pruebas de hipótesis e intervalos de confianza
+
+> TODO: declarar hipótesis nula y alternativa, seleccionar la prueba,
+> reportar estadístico, valor p, decisión e intervalo de confianza.
+
+## 8.1 Formulación de hipótesis
+
+> TODO: redactar hipótesis del estudio.
+
+## 8.2 Prueba de hipótesis
 
 ```{r hypothesis-tests}
-# process here
+# TODO: process here
 ```
+
+## 8.3 Intervalos de confianza
 
 ```{r confidence-interval}
 # TODO: process here
 ```
 
-# 6. Resultados e interpretación
+# 9. Resultados e interpretación en contexto empresarial
 
-Con base en el valor p obtenido y en los intervalos de confianza calculados,
-se interpreta si la evidencia respalda una reducción significativa en los
-tiempos de engorde con el método automático.
+> TODO: interpretar los resultados estadísticos en términos de impacto
+> empresarial y operativo.
 
-En esta sección se debe redactar la conclusión en contexto empresarial,
-incluyendo implicaciones operativas para la organización.
+# 10. Conclusiones y recomendaciones
 
-# 7. Conclusiones y recomendaciones
+> TODO: presentar conclusiones finales y recomendaciones aplicadas al caso.
 
-Este proyecto permitirá determinar si la implementación del método
-automático es estadísticamente favorable frente al método manual y, en
-consecuencia, aportar recomendaciones para la toma de decisiones en la
-empresa.
+# Referencias
 
-Como siguiente versión del informe, se incorporarán:
+> TODO: agregar referencias bibliográficas y metodológicas.
 
-- La interpretación final de las pruebas (decisión estadística).
-- La discusión de resultados en términos de eficiencia operativa.
-- Recomendaciones de implementación y seguimiento.
+# Anexo (código y tablas complementarias)
 
-```{r}
-project_data %>%
-  filter(Metodo_Alimento == "Manual") %>%
-  pull(Tiempo_Engorde) %>%
-  shapiro.test()
-```
+> TODO: incluir material complementario (tablas extensas, salidas y código).
