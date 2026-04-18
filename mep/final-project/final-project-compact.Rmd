@@ -1,0 +1,239 @@
+---
+title: "Proyecto final: Métodos estadísticos paramétricos"
+output:
+  pdf_document:
+    toc: false
+  html_document:
+    toc: false
+    number_sections: false
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
+
+library(dplyr)
+library(ggplot2)
+library(here)
+library(readxl)
+library(knitr)
+
+data_path <- here("mep", "final-project", "data_final_project.xlsx")
+sheet_name <- excel_sheets(data_path)[1]
+
+project_data <- read_excel(data_path, sheet = sheet_name) %>%
+  mutate(Metodo_Alimento = factor(Metodo_Alimento, levels = c("Manual", "Automatico")))
+
+manual_data <- project_data %>%
+  filter(Metodo_Alimento == "Manual") %>%
+  pull(Tiempo_Engorde)
+
+automatic_data <- project_data %>%
+  filter(Metodo_Alimento == "Automatico") %>%
+  pull(Tiempo_Engorde)
+
+shapiro_manual <- shapiro.test(manual_data)
+shapiro_automatic <- shapiro.test(automatic_data)
+fisher_test <- var.test(manual_data, automatic_data, alternative = "two.sided", conf.level = 0.95)
+welch_test <- t.test(
+  x = automatic_data,
+  y = manual_data,
+  alternative = "less",
+  var.equal = FALSE,
+  conf.level = 0.95
+)
+```
+
+## Grupo 8
+**Integrantes:**
+- César Reginaldo Tzoc Alvarado
+- Héctor Adolfo Son Chiché
+- Marvin Manolo Marroquín Montoya
+- Julio Fernando Ixcoy
+- Marcos Estuardo Ponciano Núñez
+- Maria Alejandra Montoya Menaldo
+
+**Pregunta de investigación:**
+*¿El método Automatico reduce significativamente el tiempo de engorde de tilapia en comparación con el método Manual?*
+
+## Diseño y EDA
+
+### Tamaño de muestra
+
+Se analizaron 100 observaciones (50 por grupo). En este entorno biológico
+controlado, `n = 50` por método ofrece base suficiente para detectar
+diferencias operativas relevantes en tiempo de engorde entre Manual y
+Automatico.
+
+### Resumen EDA
+
+```{r eda-table}
+eda_table <- project_data %>%
+  group_by(Metodo_Alimento) %>%
+  summarise(
+    Grupo = first(Metodo_Alimento),
+    Media = mean(Tiempo_Engorde),
+    `Desviación estándar` = sd(Tiempo_Engorde),
+    Mediana = median(Tiempo_Engorde),
+    `Valor mínimo` = min(Tiempo_Engorde),
+    `Valor máximo` = max(Tiempo_Engorde),
+    .groups = "drop"
+  )
+
+kable(eda_table, digits = 2, align = "lrrrrr")
+```
+
+El grupo **Automatico** presenta menor media y menor dispersión en
+`Tiempo_Engorde` respecto al grupo **Manual**, lo que sugiere una mejora
+operativa inicial en el proceso de engorde.
+
+### Boxplot
+
+```{r boxplot-page1, fig.width=7.2, fig.height=3.1}
+ggplot(project_data, aes(x = Metodo_Alimento, y = Tiempo_Engorde, fill = Metodo_Alimento)) +
+  geom_boxplot(outlier.color = "#D62728", alpha = 0.75) +
+  stat_summary(fun = mean, geom = "point", shape = 18, size = 2.8, color = "#F39C12") +
+  scale_fill_manual(values = c("Manual" = "#4C78A8", "Automatico" = "#72B7B2")) +
+  labs(x = "Método de alimentación", y = "Tiempo_Engorde (días)") +
+  theme_light() +
+  theme(legend.position = "none")
+```
+
+El boxplot confirma una menor concentración de días de engorde en el método
+**Automatico** y no evidencia valores atípicos extremos que comprometan el
+análisis paramétrico.
+
+```{=html}
+<div style="page-break-after: always;"></div>
+```
+
+[//]: # (\newpage)
+
+## Inferencia y supuestos
+
+### Código de pruebas
+
+```{r codigo-pruebas, echo=TRUE, eval=FALSE}
+# Normalidad por grupo
+shapiro.test(manual_data)
+shapiro.test(automatic_data)
+
+# Homogeneidad de varianzas (Fisher)
+var.test(manual_data, automatic_data, alternative = "two.sided", conf.level = 0.95)
+
+# Comparación de medias (Welch, unilateral)
+t.test(
+  x = automatic_data,
+  y = manual_data,
+  alternative = "less",
+  var.equal = FALSE,
+  conf.level = 0.95
+)
+```
+
+### Validación de supuestos
+
+```{r validation-table}
+validation_table <- tibble(
+  Prueba = c("Shapiro-Wilk (Manual)", "Shapiro-Wilk (Automatico)", "Fisher F (varianzas)"),
+  `Valor p` = c(shapiro_manual$p.value, shapiro_automatic$p.value, fisher_test$p.value),
+  Decisión = c(
+    ifelse(shapiro_manual$p.value > 0.05, "Normalidad razonable", "Posible desvío de normalidad"),
+    ifelse(shapiro_automatic$p.value > 0.05, "Normalidad razonable", "Posible desvío de normalidad"),
+    ifelse(fisher_test$p.value > 0.05, "Varianzas similares", "Varianzas desiguales")
+  )
+)
+
+kable(validation_table, digits = 5, align = "lrl")
+```
+
+La validación muestra normalidad compatible en ambos grupos
+(`p > 0.05`) y evidencia de varianzas desiguales (`p < 0.05`), por lo que la
+prueba adecuada para comparar medias es la **t de Welch**.
+
+### Prueba F de Fisher
+
+```{r fisher-output-table}
+fisher_table <- tibble(
+  `Estadístico F` = unname(fisher_test$statistic),
+  `gl numerador` = unname(fisher_test$parameter[1]),
+  `gl denominador` = unname(fisher_test$parameter[2]),
+  `Valor p` = fisher_test$p.value
+)
+
+kable(fisher_table, digits = 5, align = "rrrr")
+```
+
+Con `p < 0.05`, se rechaza la igualdad de varianzas entre Manual y
+Automatico. Este resultado justifica el uso del enfoque de Welch en la
+comparación de medias.
+
+### Prueba t de Welch
+
+```{r welch-test-output}
+welch_table <- tibble(
+  `Estadístico t` = unname(welch_test$statistic),
+  df = unname(welch_test$parameter),
+  `Valor p` = welch_test$p.value,
+  `IC 95% inferior` = welch_test$conf.int[1],
+  `IC 95% superior` = welch_test$conf.int[2]
+)
+
+kable(welch_table, digits = 4, align = "rrrrr")
+```
+
+La prueba t de Welch rechaza \(H_0\) y confirma que el tiempo promedio de
+engorde con **Automatico** es significativamente menor que con **Manual**.
+
+### Gráficos diagnósticos
+
+```{r diagnostics-two-columns, fig.show='hold', out.width='49%', fig.height=2.6}
+ggplot(project_data, aes(x = Metodo_Alimento, y = Tiempo_Engorde, fill = Metodo_Alimento)) +
+  geom_boxplot(outlier.color = "#D62728", alpha = 0.75) +
+  scale_fill_manual(values = c("Manual" = "#4C78A8", "Automatico" = "#72B7B2")) +
+  labs(title = "Boxplot", x = "Método", y = "Tiempo") +
+  theme_light() +
+  theme(legend.position = "none", plot.title = element_text(size = 10))
+
+model_fit <- lm(Tiempo_Engorde ~ Metodo_Alimento, data = project_data)
+res_df <- tibble(residuals = resid(model_fit))
+
+ggplot(res_df, aes(sample = residuals)) +
+  stat_qq(color = "#1F4E79", alpha = 0.75, size = 1) +
+  stat_qq_line(color = "#E45756", linewidth = 0.8) +
+  labs(title = "Q-Q plot de residuales", x = "Cuantiles teóricos", y = "Cuantiles muestrales") +
+  theme_light() +
+  theme(plot.title = element_text(size = 10))
+```
+
+En el Q-Q plot, los residuales siguen razonablemente la recta de referencia,
+lo que respalda el uso del enfoque paramétrico en la comparación de medias.
+
+```{=html}
+<div style="page-break-after: always;"></div>
+```
+
+[//]: # (\newpage)
+
+## Negocio y estrategia
+
+### Interpretación de negocio
+
+```{r business-metric}
+mean_reduction <- mean(automatic_data) - mean(manual_data)
+```
+
+La diferencia estimada es de **`r sprintf("%.2f", abs(mean_reduction))` días
+menos** con el método Automatico. Esta reducción permite una rotación más
+rápida de estanques, incrementa el número potencial de ciclos productivos por
+año y reduce costos de mantenimiento por ciclo.
+
+### Conclusiones
+
+- **Objetivo descriptivo:** El método Automatico presenta menor media de `Tiempo_Engorde` que Manual.
+- **Objetivo de supuestos:** Shapiro-Wilk sugiere normalidad razonable por grupo; Fisher indica varianzas desiguales.
+- **Objetivo inferencial:** La prueba t de Welch rechaza \(H_0\) y respalda una reducción significativa del tiempo con Automatico.
+
+### Recomendaciones
+
+1. **Estandarizar el método Automatico** como práctica operativa principal en engorde de tilapias.
+2. **Implementar monitoreo de ROI** por ciclo (tiempo, costo, supervivencia y productividad) para asegurar sostenibilidad técnica y financiera.
