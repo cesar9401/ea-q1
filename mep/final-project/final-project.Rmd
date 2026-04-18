@@ -1,8 +1,6 @@
 ---
 title: "Proyecto final: Métodos estadísticos paramétricos"
-output:
-  pdf_document:
-    latex_engine: xelatex
+output: html_document
 ---
 
 ```{r setup, include = FALSE}
@@ -36,7 +34,7 @@ es elaborado por el **Grupo 8**, conformado por:
 # 1. Identificación del tema de investigación
 
 El tema de investigación consiste en comparar dos métodos de crecimiento y engorde de
-tilapias: **Manual** (control) y **Automatico** (experimental), con el fin
+tilapias (pez): **Manual** (control) y **Automatico** (experimental), con el fin
 de evaluar si el método automático reduce el tiempo de engorde.
 
 Este análisis aplica técnicas de estadística paramétrica para respaldar una
@@ -405,7 +403,7 @@ igualdad de varianzas, y (d) prueba de medias de Welch.
 En este estudio, la evidencia converge en la misma dirección: normalidad
 razonable en ambos grupos, diferencia de varianzas y una diferencia de
 medias altamente significativa a favor del método Automatico. Para el caso de
-aplicación de **crecimiento y engorde de
+aplicación en **producción acuícola de
 tilapias**, los resultados indican una mejora real en
 el tiempo de engorde al usar el método Automatico.
 
@@ -413,7 +411,7 @@ el tiempo de engorde al usar el método Automatico.
 
 Con base en las pruebas realizadas (Shapiro-Wilk, Fisher y Welch), se
 concluye que el método **Automatico** reduce significativamente el tiempo de
-engorde frente al método Manual en el **crecimiento y engorde de
+engorde frente al método Manual en la **producción acuícola de
 tilapias**.
 
 La reducción media estimada es de aproximadamente 16.66 días, con evidencia
