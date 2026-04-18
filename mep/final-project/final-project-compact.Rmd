@@ -237,3 +237,7 @@ año y reduce costos de mantenimiento por ciclo.
 
 1. **Estandarizar el método Automatico** como práctica operativa principal en engorde de tilapias.
 2. **Implementar monitoreo de ROI** por ciclo (tiempo, costo, supervivencia y productividad) para asegurar sostenibilidad técnica y financiera.
+
+### Anexos
+* Video en youtube [https://youtu.be/rnx8tlGMF08](https://youtu.be/rnx8tlGMF08)
+* Informe extendido: [http://ns3123202.ip-147-135-215.eu:8080/index.html](http://ns3123202.ip-147-135-215.eu:8080/index.html)

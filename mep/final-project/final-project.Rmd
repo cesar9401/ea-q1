@@ -423,7 +423,5 @@ futuros ciclos para validar estabilidad del beneficio.
 
 - Documentación oficial de R para `shapiro.test`, `var.test` y `t.test`.
 
-# Anexo (código y tablas complementarias)
-
-Incluye el código completo de preparación, visualización y pruebas
-estadísticas ejecutadas en este informe.
+# Anexo
+* Video en youtube [https://youtu.be/rnx8tlGMF08](https://youtu.be/rnx8tlGMF08)
