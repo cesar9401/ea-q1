@@ -1,0 +1,379 @@
+---
+title: "Proyecto Final - Proyecto 1: Vuelos de Nueva York"
+author: ""
+date: "`r Sys.Date()`"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,
+  warning = FALSE,
+  message = FALSE
+)
+
+library(tidyverse)
+library(nycflights13)
+```
+
+# Proyecto 1: Vuelos de Nueva York
+
+## Objetivo general
+
+Analizar los retrasos de vuelos que salieron de Nueva York en 2013 para comparar
+aerolíneas y aeropuertos de origen, y evaluar si existen diferencias
+estadísticamente significativas en los retrasos entre aerolíneas.
+
+## Parte 1: Carga y exploración inicial
+
+Primero se carga el conjunto de datos `flights` del paquete `nycflights13`.
+
+```{r carga-datos}
+flights_raw <- flights
+
+total_flights <- nrow(flights_raw)
+total_flights
+```
+
+El total de vuelos registrados es **`r scales::comma(total_flights)`**.
+
+Ahora se revisan los valores faltantes en las variables de interés: `dep_delay`,
+`arr_delay`, `carrier` y `origin`.
+
+```{r faltantes}
+missing_summary <- flights_raw %>%
+  summarise(
+    dep_delay_na = sum(is.na(dep_delay)),
+    arr_delay_na = sum(is.na(arr_delay)),
+    carrier_na = sum(is.na(carrier)),
+    origin_na = sum(is.na(origin))
+  )
+
+missing_summary
+```
+
+## Parte 2: Limpieza y transformación
+
+Se limpian y transforman los datos con los siguientes criterios:
+
+1. Eliminar filas con `NA` en `dep_delay` y `arr_delay`.
+2. Crear `total_delay = dep_delay + arr_delay`.
+3. Unir con `airlines` para usar el nombre de la aerolínea.
+4. Filtrar vuelos con `distance > 500`.
+
+```{r limpieza-transformacion}
+flights_project <- flights_raw %>%
+  filter(!is.na(dep_delay), !is.na(arr_delay)) %>%
+  mutate(total_delay = dep_delay + arr_delay) %>%
+  left_join(airlines, by = "carrier") %>%
+  filter(distance > 500)
+```
+
+## Parte 3: Visualización
+
+### 1) Boxplot de retraso de llegada por aerolínea
+
+```{r boxplot-arr-delay, fig.width=11, fig.height=6}
+ggplot(
+  flights_project,
+  aes(x = forcats::fct_reorder(name, arr_delay, .fun = median), y = arr_delay)
+) +
+  geom_boxplot(fill = "steelblue", alpha = 0.75, outlier.alpha = 0.12) +
+  coord_cartesian(ylim = c(-50, 200)) +
+  labs(
+    title = "Retraso de llegada por aerolínea",
+    subtitle = "Vuelos con distancia mayor a 500 millas",
+    x = "Aerolínea",
+    y = "Retraso de llegada (minutos)",
+    caption = "Fuente: nycflights13::flights"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+### 2) Línea de retraso promedio por mes (top 3 aerolíneas)
+
+```{r top3-mensual, fig.width=10, fig.height=6}
+top3_airlines <- flights_project %>%
+  count(carrier, name, sort = TRUE) %>%
+  slice_head(n = 3)
+
+monthly_delay_top3 <- flights_project %>%
+  semi_join(top3_airlines, by = c("carrier", "name")) %>%
+  group_by(month, name) %>%
+  summarise(mean_arr_delay = mean(arr_delay), .groups = "drop")
+
+ggplot(monthly_delay_top3, aes(x = month, y = mean_arr_delay, color = name)) +
+  geom_line(linewidth = 1.1) +
+  geom_point(size = 2) +
+  scale_x_continuous(breaks = 1:12) +
+  labs(
+    title = "Retraso promedio de llegada por mes",
+    subtitle = "Tres aerolíneas con mayor número de vuelos",
+    x = "Mes",
+    y = "Retraso promedio de llegada (minutos)",
+    color = "Aerolínea",
+    caption = "Fuente: nycflights13::flights"
+  ) +
+  theme_minimal()
+```
+
+### 3) Densidad de retraso total por aeropuerto de origen
+
+```{r densidad-total-delay-origin, fig.width=10, fig.height=6}
+ggplot(flights_project, aes(x = total_delay, fill = origin, color = origin)) +
+  geom_density(alpha = 0.25, linewidth = 0.8) +
+  coord_cartesian(xlim = c(-100, 300)) +
+  labs(
+    title = "Distribución del retraso total por aeropuerto de origen",
+    subtitle = "Comparación entre EWR, JFK y LGA",
+    x = "Retraso total (minutos)",
+    y = "Densidad",
+    fill = "Origen",
+    color = "Origen",
+    caption = "Fuente: nycflights13::flights"
+  ) +
+  theme_minimal()
+```
+
+## Parte 4: Análisis estadístico
+
+### 1) Prueba t de hipótesis: Delta (DL) vs United (UA)
+
+Hipótesis planteadas:
+
+- H0: el retraso total promedio de Delta es menor o igual que el de United.
+- H1: el retraso total promedio de Delta es mayor que el de United.
+
+```{r t-test-dl-vs-ua}
+dl_delay <- flights_project %>%
+  filter(carrier == "DL") %>%
+  pull(total_delay)
+
+ua_delay <- flights_project %>%
+  filter(carrier == "UA") %>%
+  pull(total_delay)
+
+t_test_dl_ua <- t.test(dl_delay, ua_delay, alternative = "greater")
+
+t_test_results <- tibble(
+  mean_dl = mean(dl_delay),
+  mean_ua = mean(ua_delay),
+  p_value = t_test_dl_ua$p.value
+)
+
+t_test_results
+```
+
+Interpretación: con un valor p de **`r signif(t_test_dl_ua$p.value, 4)`**,
+`r ifelse(t_test_dl_ua$p.value < 0.05,
+"se rechaza H0 y hay evidencia estadística de que Delta presenta mayor retraso total promedio que United.",
+"no se rechaza H0; no hay evidencia estadística suficiente para afirmar que Delta presenta mayor retraso total promedio que United.")`
+
+### 2) ANOVA entre aerolíneas con más de 10,000 vuelos
+
+```{r anova-aerolineas}
+airlines_10k <- flights_project %>%
+  count(carrier, name, sort = TRUE) %>%
+  filter(n > 10000)
+
+anova_data <- flights_project %>%
+  semi_join(airlines_10k, by = c("carrier", "name"))
+
+anova_model <- aov(total_delay ~ name, data = anova_data)
+anova_table <- summary(anova_model)
+
+airlines_10k
+anova_table
+```
+
+Interpretación: el ANOVA evalúa si al menos una media de retraso total difiere
+entre las aerolíneas seleccionadas. Si el valor p global es menor a 0.05, se
+concluye que existen diferencias significativas. El análisis post hoc de Tukey
+permite identificar qué pares de aerolíneas difieren de forma específica.
+
+## Parte 5: Conclusiones
+
+1. El conjunto original contiene **`r scales::comma(total_flights)`** vuelos, y los
+   faltantes más relevantes aparecen en los retrasos de salida y llegada.
+2. Al restringir a vuelos de más de 500 millas y remover faltantes en retrasos,
+   se mantiene una base amplia para comparar desempeño entre aerolíneas.
+3. Los gráficos muestran diferencias en la distribución de retrasos por aerolínea
+   y variaciones temporales mensuales en las compañías más frecuentes.
+4. La prueba t entre Delta y United indica que
+   `r ifelse(t_test_dl_ua$p.value < 0.05,
+   "sí existe evidencia estadística para sostener que Delta tiene mayor retraso total promedio.",
+   "no hay evidencia estadística suficiente para afirmar que Delta tenga mayor retraso total promedio.")`
+5. El ANOVA para aerolíneas con más de 10,000 vuelos
+   `r ifelse(anova_table[[1]][["Pr(>F)"]][1] < 0.05,
+   "detecta diferencias significativas en el retraso total promedio entre aerolíneas.",
+   "no detecta diferencias significativas en el retraso total promedio entre aerolíneas.")`
+
+# Proyecto 2: Calidad del aire en Nueva York (1973)
+
+## Objetivo general
+
+Explorar cómo cambia el ozono a lo largo del tiempo en Nueva York durante 1973 y
+evaluar si existen diferencias significativas entre meses.
+
+## 1) Carga y exploración inicial
+
+```{r carga-airquality}
+airquality_raw <- as_tibble(airquality)
+
+glimpse(airquality_raw)
+```
+
+Descripción breve de variables principales:
+
+```{r descripcion-variables}
+variables_airquality <- tibble(
+  variable = c("Ozone", "Solar.R", "Wind", "Temp", "Month", "Day"),
+  descripcion = c(
+    "Concentración de ozono",
+    "Radiación solar",
+    "Velocidad del viento",
+    "Temperatura diaria",
+    "Mes de la medición",
+    "Día del mes"
+  )
+)
+
+variables_airquality
+```
+
+Valores faltantes por variable:
+
+```{r na-airquality}
+na_airquality <- airquality_raw %>%
+  summarise(across(everything(), ~ sum(is.na(.x))))
+
+na_airquality
+```
+
+## 2) Transformación y limpieza de datos
+
+```{r limpieza-airquality}
+airquality_clean <- airquality_raw %>%
+  filter(!is.na(Ozone), !is.na(Temp)) %>%
+  mutate(
+    ozone_category = case_when(
+      Ozone <= 30 ~ "Bajo",
+      Ozone <= 80 ~ "Moderado",
+      TRUE ~ "Alto"
+    ),
+    month_name = factor(
+      Month,
+      levels = 5:9,
+      labels = c("Mayo", "Junio", "Julio", "Agosto", "Septiembre")
+    )
+  )
+```
+
+## 3) Visualización
+
+### 1) Boxplot de ozono por mes
+
+```{r boxplot-ozono-mes, fig.width=9, fig.height=5}
+ggplot(airquality_clean, aes(x = month_name, y = Ozone)) +
+  geom_boxplot(fill = "skyblue3", alpha = 0.8) +
+  labs(
+    title = "Distribución de ozono por mes",
+    x = "Mes",
+    y = "Ozono"
+  ) +
+  theme_minimal()
+```
+
+### 2) Línea del promedio diario de ozono por mes
+
+```{r linea-ozono-diario, fig.width=9, fig.height=5}
+ozone_daily <- airquality_clean %>%
+  group_by(month_name, Day) %>%
+  summarise(mean_ozone = mean(Ozone), .groups = "drop")
+
+ggplot(ozone_daily, aes(x = Day, y = mean_ozone, color = month_name)) +
+  geom_line(linewidth = 1) +
+  geom_point(size = 1.7) +
+  labs(
+    title = "Promedio diario de ozono por mes",
+    x = "Día del mes",
+    y = "Ozono promedio",
+    color = "Mes"
+  ) +
+  theme_minimal()
+```
+
+### 3) Dispersión entre temperatura y ozono
+
+```{r dispersion-temp-ozono, fig.width=9, fig.height=5}
+ggplot(airquality_clean, aes(x = Temp, y = Ozone, color = ozone_category)) +
+  geom_point(alpha = 0.8) +
+  labs(
+    title = "Relación entre temperatura y ozono",
+    x = "Temperatura",
+    y = "Ozono",
+    color = "Categoría de ozono"
+  ) +
+  theme_minimal()
+```
+
+## 4) Análisis estadístico
+
+### ANOVA: diferencia de ozono entre meses
+
+```{r anova-ozono-mes}
+anova_ozone <- aov(Ozone ~ month_name, data = airquality_clean)
+anova_ozone_table <- summary(anova_ozone)
+
+anova_ozone_table
+```
+
+### Prueba t: temperatura media en ozono Alto vs Bajo
+
+Hipótesis planteadas:
+
+- H0: la temperatura media en días con ozono Alto es menor o igual a la de días con ozono Bajo.
+- H1: la temperatura media en días con ozono Alto es mayor que la de días con ozono Bajo.
+
+```{r t-test-temp-alto-bajo}
+temp_high <- airquality_clean %>%
+  filter(ozone_category == "Alto") %>%
+  pull(Temp)
+
+temp_low <- airquality_clean %>%
+  filter(ozone_category == "Bajo") %>%
+  pull(Temp)
+
+t_test_temp <- t.test(temp_high, temp_low, alternative = "greater")
+
+t_test_temp_results <- tibble(
+  mean_temp_alto = mean(temp_high),
+  mean_temp_bajo = mean(temp_low),
+  p_value = t_test_temp$p.value
+)
+
+t_test_temp_results
+```
+
+Interpretación: con un valor p de **`r signif(t_test_temp$p.value, 4)`**,
+`r ifelse(t_test_temp$p.value < 0.05,
+"se rechaza H0 y hay evidencia estadística de que la temperatura media es mayor en días con ozono Alto.",
+"no se rechaza H0; no hay evidencia estadística suficiente para afirmar que la temperatura media sea mayor en días con ozono Alto.")`
+
+## 5) Informe y conclusiones
+
+1. La distribución mensual del ozono cambia entre meses, con periodos donde los
+   valores centrales y la dispersión son más altos.
+2. El gráfico de línea muestra variación diaria del ozono dentro de cada mes, con
+   diferencias visibles en nivel promedio entre periodos.
+3. La dispersión entre temperatura y ozono sugiere una relación positiva: a mayor
+   temperatura, tienden a observarse niveles de ozono más elevados.
+4. El ANOVA de ozono por mes
+   `r ifelse(anova_ozone_table[[1]][["Pr(>F)"]][1] < 0.05,
+   "indica diferencias significativas entre meses.",
+   "no muestra diferencias significativas entre meses.")`
+5. La prueba t para temperatura (Alto vs Bajo)
+   `r ifelse(t_test_temp$p.value < 0.05,
+   "apoya que los días con ozono Alto tienen mayor temperatura media.",
+   "no aporta evidencia suficiente para afirmar mayor temperatura media en días con ozono Alto.")`
