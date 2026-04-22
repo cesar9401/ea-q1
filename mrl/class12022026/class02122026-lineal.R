@@ -1,5 +1,6 @@
 library(openxlsx)
 library(ggplot2)
+library(here)
 
 data <- read.xlsx(here("mrl/class12022026/minimos_cuadrados_data.xlsx"), sheet = 1)
 # ggplot(data, aes(x = Edad, y = Resistencia)) +

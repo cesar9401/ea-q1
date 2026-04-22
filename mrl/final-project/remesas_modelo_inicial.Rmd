@@ -1,0 +1,188 @@
+---
+title: "Proyecto Final - Modelado de Remesas"
+author: "Grupo 10"
+date: "`r Sys.Date()`"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(here)
+library(readr)
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+```
+
+## Cargar datos
+
+```{r read-data}
+remesas_wide <- read_csv(
+  here("mrl/final-project/remfam2002_2026.csv"),
+  show_col_types = FALSE
+)
+
+head(remesas_wide)
+```
+
+## Transformar de formato ancho a largo y construir indice temporal
+
+```{r transform-data}
+meses <- c(
+  "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+  "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
+)
+
+remesas_long <- remesas_wide %>%
+  pivot_longer(
+    cols = -Mes,
+    names_to = "anio",
+    values_to = "remesas"
+  ) %>%
+  mutate(
+    anio = as.integer(anio),
+    remesas = as.numeric(remesas)
+  ) %>%
+  drop_na(remesas) %>%
+  mutate(
+    mes_num = match(Mes, meses),
+    fecha = as.Date(sprintf("%04d-%02d-01", anio, mes_num))
+  ) %>%
+  arrange(fecha) %>%
+  mutate(t = row_number())
+
+head(remesas_long)
+tail(remesas_long)
+nrow(remesas_long)
+```
+
+# Introducción
+
+[Escriba aquí la introducción del proyecto.]
+
+# Objetivos
+
+## Objetivo general
+
+[Escriba aquí el objetivo general.]
+
+## Objetivos específicos
+
+- [Objetivo específico 1]
+- [Objetivo específico 2]
+- [Objetivo específico 3]
+
+# Marco teórico
+
+[Escriba aquí el marco teórico del proyecto.]
+
+# Análisis de cada modelo
+
+## Modelo lineal
+
+[Espacio para el análisis del modelo lineal.]
+
+```{r modelo-lineal-placeholder, eval=FALSE}
+# Ajuste del modelo lineal usando remesas_long
+modelo_lineal <- lm(remesas ~ t, data = remesas_long)
+
+# Nuevo objeto para evaluación y gráfica
+lineal_df <- remesas_long %>%
+  mutate(ajuste_lineal = fitted(modelo_lineal))
+
+# Gráfica de datos observados y ajuste
+ggplot(lineal_df, aes(x = fecha, y = remesas)) +
+  geom_point(color = "#1f4e79", alpha = 0.7) +
+  geom_line(aes(y = ajuste_lineal), color = "#ffc600", linewidth = 1) +
+  theme_light()
+```
+
+## Modelo exponencial
+
+[Espacio para el análisis del modelo exponencial.]
+
+```{r modelo-exponencial-placeholder, eval=FALSE}
+# Ajuste del modelo exponencial usando remesas_long
+modelo_exponencial <- lm(log(remesas) ~ t, data = remesas_long)
+
+# Nuevo objeto para evaluación y gráfica
+exponencial_df <- remesas_long %>%
+  mutate(ajuste_exponencial = exp(fitted(modelo_exponencial)))
+
+# Gráfica de datos observados y ajuste
+ggplot(exponencial_df, aes(x = fecha, y = remesas)) +
+  geom_point(color = "#1f4e79", alpha = 0.7) +
+  geom_line(aes(y = ajuste_exponencial), color = "#ffc600", linewidth = 1) +
+  theme_light()
+```
+
+## Modelo logarítmico
+
+[Espacio para el análisis del modelo logarítmico.]
+
+```{r modelo-logaritmico-placeholder, eval=FALSE}
+# Ajuste del modelo logarítmico usando remesas_long
+modelo_logaritmico <- lm(remesas ~ log(t), data = remesas_long)
+
+# Nuevo objeto para evaluación y gráfica
+logaritmico_df <- remesas_long %>%
+  mutate(ajuste_logaritmico = fitted(modelo_logaritmico))
+
+# Gráfica de datos observados y ajuste
+ggplot(logaritmico_df, aes(x = fecha, y = remesas)) +
+  geom_point(color = "#1f4e79", alpha = 0.7) +
+  geom_line(aes(y = ajuste_logaritmico), color = "#ffc600", linewidth = 1) +
+  theme_light()
+```
+
+## Modelo recíproco
+
+[Espacio para el análisis del modelo recíproco.]
+
+```{r modelo-reciproco-placeholder, eval=FALSE}
+# Ajuste del modelo recíproco usando remesas_long
+modelo_reciproco <- lm(remesas ~ I(1 / t), data = remesas_long)
+
+# Nuevo objeto para evaluación y gráfica
+reciproco_df <- remesas_long %>%
+  mutate(ajuste_reciproco = fitted(modelo_reciproco))
+
+# Gráfica de datos observados y ajuste
+ggplot(reciproco_df, aes(x = fecha, y = remesas)) +
+  geom_point(color = "#1f4e79", alpha = 0.7) +
+  geom_line(aes(y = ajuste_reciproco), color = "#ffc600", linewidth = 1) +
+  theme_light()
+```
+
+# Pruebas de hipótesis
+
+[Espacio para documentar las pruebas de hipótesis de cada modelo.]
+
+## Hipótesis del modelo lineal
+
+[Planteamiento y resultados.]
+
+## Hipótesis del modelo exponencial
+
+[Planteamiento y resultados.]
+
+## Hipótesis del modelo logarítmico
+
+[Planteamiento y resultados.]
+
+## Hipótesis del modelo recíproco
+
+[Planteamiento y resultados.]
+
+# Diagnósticos
+
+[Espacio para diagnósticos de supuestos y residuos de cada modelo.]
+
+# Conclusiones
+
+[Escriba aquí las conclusiones del proyecto.]
+
+# Recomendaciones
+
+[Escriba aquí las recomendaciones finales.]
