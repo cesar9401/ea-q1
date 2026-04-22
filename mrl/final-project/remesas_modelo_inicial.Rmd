@@ -83,7 +83,7 @@ nrow(remesas_long)
 
 [Espacio para el análisis del modelo lineal.]
 
-```{r modelo-lineal-placeholder, eval=FALSE}
+```{r modelo-lineal-placeholder}
 # Ajuste del modelo lineal usando remesas_long
 modelo_lineal <- lm(remesas ~ t, data = remesas_long)
 
@@ -102,57 +102,32 @@ ggplot(lineal_df, aes(x = fecha, y = remesas)) +
 
 [Espacio para el análisis del modelo exponencial.]
 
-```{r modelo-exponencial-placeholder, eval=FALSE}
-# Ajuste del modelo exponencial usando remesas_long
-modelo_exponencial <- lm(log(remesas) ~ t, data = remesas_long)
-
-# Nuevo objeto para evaluación y gráfica
-exponencial_df <- remesas_long %>%
-  mutate(ajuste_exponencial = exp(fitted(modelo_exponencial)))
-
-# Gráfica de datos observados y ajuste
-ggplot(exponencial_df, aes(x = fecha, y = remesas)) +
-  geom_point(color = "#1f4e79", alpha = 0.7) +
-  geom_line(aes(y = ajuste_exponencial), color = "#ffc600", linewidth = 1) +
-  theme_light()
+```{r modelo-exponencial-placeholder}
+# agregar exponencial aqui
 ```
 
 ## Modelo logarítmico
 
 [Espacio para el análisis del modelo logarítmico.]
 
-```{r modelo-logaritmico-placeholder, eval=FALSE}
-# Ajuste del modelo logarítmico usando remesas_long
-modelo_logaritmico <- lm(remesas ~ log(t), data = remesas_long)
-
-# Nuevo objeto para evaluación y gráfica
-logaritmico_df <- remesas_long %>%
-  mutate(ajuste_logaritmico = fitted(modelo_logaritmico))
-
-# Gráfica de datos observados y ajuste
-ggplot(logaritmico_df, aes(x = fecha, y = remesas)) +
-  geom_point(color = "#1f4e79", alpha = 0.7) +
-  geom_line(aes(y = ajuste_logaritmico), color = "#ffc600", linewidth = 1) +
-  theme_light()
+```{r modelo-logaritmico-placeholder}
+# agregar logaritmico aqui
 ```
 
 ## Modelo recíproco
 
 [Espacio para el análisis del modelo recíproco.]
 
-```{r modelo-reciproco-placeholder, eval=FALSE}
-# Ajuste del modelo recíproco usando remesas_long
-modelo_reciproco <- lm(remesas ~ I(1 / t), data = remesas_long)
+```{r modelo-reciproco-placeholder}
+# agregar reciproco aqui
+```
 
-# Nuevo objeto para evaluación y gráfica
-reciproco_df <- remesas_long %>%
-  mutate(ajuste_reciproco = fitted(modelo_reciproco))
+## Modelo Potencial
 
-# Gráfica de datos observados y ajuste
-ggplot(reciproco_df, aes(x = fecha, y = remesas)) +
-  geom_point(color = "#1f4e79", alpha = 0.7) +
-  geom_line(aes(y = ajuste_reciproco), color = "#ffc600", linewidth = 1) +
-  theme_light()
+[Espacio para el análisis del modelo logarítmico.]
+
+```{r modelo-potencial-placeholder}
+# agregar potencial aqui
 ```
 
 # Pruebas de hipótesis
