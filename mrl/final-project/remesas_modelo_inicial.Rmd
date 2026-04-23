@@ -2,7 +2,7 @@
 title: "Proyecto Final - Modelado de Remesas"
 author: "Grupo 10"
 date: "`r Sys.Date()`"
-output: pdf_document
+output: html_document
 ---
 
 ```{r setup, include=FALSE}
@@ -104,6 +104,16 @@ ggplot(lineal_df, aes(x = fecha, y = remesas)) +
 
 ```{r modelo-exponencial-placeholder}
 # agregar exponencial aqui
+remesas_long$remesas_log <- log(remesas_long$remesas)
+modelo_exp <- lm(remesas_log ~ t, data = remesas_long)
+summary(modelo_exp)
+
+formula <- function(x) { exp(modelo_exp$coefficients[1]) * exp(modelo_exp$coefficients[[2]] * x) }
+
+plot(remesas_long$t, remesas_long$remesas, col = "#1f4e79", ann = F)
+par(new = T)
+plot(remesas_long$t, formula(remesas_long$t),
+     col = "#ffc600", lwd = 2, type = 'l')
 ```
 
 ## Modelo logarítmico
@@ -145,14 +155,14 @@ sobre la forma linealizada y se regresa a la escala original con $\beta_0 = e^{\
 modelo_potencial <- lm(log(remesas) ~ log(t), data = remesas_long)
 
 b0_star <- coef(modelo_potencial)[1]
-b1      <- coef(modelo_potencial)[2]
-b0      <- exp(b0_star)
+b1 <- coef(modelo_potencial)[2]
+b0 <- exp(b0_star)
 
 potencial_df <- remesas_long %>%
   mutate(
-    ajuste_log       = fitted(modelo_potencial),
+    ajuste_log = fitted(modelo_potencial),
     ajuste_potencial = exp(ajuste_log),
-    residuo          = remesas - ajuste_potencial
+    residuo = remesas - ajuste_potencial
   )
 
 summary(modelo_potencial)
@@ -223,18 +233,18 @@ summary(modelo_logaritmico)
 Del `summary()` se observa:
 
 - El **p-value** del coeficiente `log(t)` es < 2e-16, muy por debajo de 0.05,
-  por lo que se rechaza $H_0$ y se concluye que el tiempo (en escala logarítmica)
-  tiene un efecto significativo sobre las remesas. Por cada unidad que aumenta
-  $\ln(t)$, las remesas aumentan en promedio **Q401.08 millones**.
+por lo que se rechaza $H_0$ y se concluye que el tiempo (en escala logarítmica)
+tiene un efecto significativo sobre las remesas. Por cada unidad que aumenta
+$\ln(t)$, las remesas aumentan en promedio **Q401.08 millones**.
 
 - El **$R^2$ = 0.4527**, lo que indica que el modelo explica apenas el **45.27%**
-  de la variabilidad total en las remesas. Esto sugiere que el modelo logarítmico
-  **no captura bien** el comportamiento de los datos, especialmente el crecimiento
-  acelerado observado a partir de 2020.
+de la variabilidad total en las remesas. Esto sugiere que el modelo logarítmico
+**no captura bien** el comportamiento de los datos, especialmente el crecimiento
+acelerado observado a partir de 2020.
 
 - El **estadístico F = 239.1** con p-value < 2.2e-16 confirma que el modelo es
-  globalmente significativo, aunque su capacidad explicativa es limitada dado el
-  bajo $R^2$.
+globalmente significativo, aunque su capacidad explicativa es limitada dado el
+bajo $R^2$.
 
 En conclusión, si bien el modelo logarítmico es estadísticamente significativo,
 un $R^2$ de 0.45 indica un ajuste moderado-bajo. Se esperaría que modelos como
