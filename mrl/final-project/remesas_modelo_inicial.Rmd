@@ -2,7 +2,9 @@
 title: "Proyecto Final - Modelado de Remesas"
 author: "Grupo 10"
 date: "`r Sys.Date()`"
-output: html_document
+output:
+  pdf_document: default
+  html_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -88,17 +90,88 @@ kable(
 
 ## Objetivo general
 
-[Escriba aquí el objetivo general.]
+- Comparar modelos de regresión no lineal (lineal, exponencial, logarítmico,
+  recíproco y potencial) aplicados a las remesas familiares de Guatemala
+  durante el periodo 2002–2026, identificando el modelo que mejor describe
+  su dinámica de crecimiento.
 
 ## Objetivos específicos
 
-- [Objetivo específico 1]
-- [Objetivo específico 2]
-- [Objetivo específico 3]
+- Ajustar cinco modelos de regresión (lineal, exponencial, logarítmico,
+  recíproco y potencial) sobre la serie mensual de remesas familiares
+  de Guatemala utilizando el índice temporal $t$ como variable predictora.
+
+- Evaluar la significancia estadística de cada modelo mediante pruebas
+  de hipótesis sobre los coeficientes y el estadístico F global,
+  con un nivel de significancia $\alpha = 0.05$.
+
+- Comparar el ajuste de los modelos mediante el coeficiente $R^2$ para
+  identificar cuál describe mejor el crecimiento de las remesas.
 
 # Marco teórico
 
-[Escriba aquí el marco teórico del proyecto.]
+## Regresión lineal simple
+
+La regresión lineal simple modela la relación entre una variable dependiente
+$Y$ y una variable independiente $X$ mediante una función de la forma:
+
+$$Y = \beta_0 + \beta_1 X + \varepsilon$$
+
+donde $\beta_0$ es el intercepto, $\beta_1$ es la pendiente y $\varepsilon$
+es el término de error aleatorio. Los parámetros se estiman por el método
+de Mínimos Cuadrados Ordinarios (MCO), minimizando la suma de cuadrados de
+los residuos $\sum(Y_i - \hat{Y}_i)^2$. La bondad de ajuste se mide con el
+coeficiente de determinación $R^2$, que indica la proporción de variabilidad
+en $Y$ explicada por el modelo (Montgomery et al., 2012).
+
+## Modelos de regresión no lineal linealizables
+
+Cuando la relación entre las variables no es lineal, es posible aplicar
+transformaciones algebraicas que permiten reexpresar el modelo en una forma
+lineal y estimarlo por MCO. Los modelos utilizados en este proyecto son:
+
+**Modelo exponencial.** Describe un crecimiento a tasa porcentual constante:
+$Y = \beta_0 e^{\beta_1 X}\varepsilon$. Aplicando logaritmo natural se
+linealiza como $\ln(Y) = \beta_0^* + \beta_1 X + \varepsilon^*$, con
+$\beta_0^* = \ln(\beta_0)$. Es adecuado para series con crecimiento acelerado
+y sostenido en el tiempo.
+
+**Modelo logarítmico.** De la forma $Y = \beta_0 + \beta_1 \ln(X) + \varepsilon$,
+describe situaciones en que el crecimiento es rápido al inicio y luego se
+desacelera. No requiere transformación en $Y$; basta con transformar $X$
+usando su logaritmo natural.
+
+**Modelo recíproco.** De la forma $Y = \beta_0 + \beta_1(1/X) + \varepsilon$,
+es útil cuando la variable dependiente converge a una asíntota conforme $X$
+crece. Se estima directamente por MCO sustituyendo $X$ por $1/X$.
+
+**Modelo potencial.** De la forma $Y = \beta_0 X^{\beta_1}\varepsilon$,
+captura crecimientos acelerados con elasticidad constante. Se linealiza
+aplicando logaritmo en ambos lados: $\ln(Y) = \beta_0^* + \beta_1 \ln(X) + \varepsilon^*$.
+El exponente $\beta_1$ se interpreta como la elasticidad de $Y$ respecto a $X$.
+
+## Pruebas de hipótesis en regresión
+
+Para cada modelo se evalúa si el predictor tiene efecto significativo sobre
+la variable respuesta. La prueba $t$ de Student contrasta $H_0: \beta_1 = 0$
+contra $H_1: \beta_1 \neq 0$ para cada coeficiente individual, mientras que
+el estadístico $F$ evalúa la significancia global del modelo. Se rechaza $H_0$
+cuando el p-value es menor al nivel de significancia $\alpha = 0.05$
+(Montgomery et al., 2012). La selección del modelo más adecuado se basa en
+el valor de $R^2$, la inspección visual del ajuste y el comportamiento de
+los residuos.
+
+## Remesas familiares en Guatemala
+
+Las remesas familiares constituyen transferencias monetarias enviadas por
+migrantes guatemaltecos residentes en el exterior, principalmente en Estados
+Unidos, hacia sus familias en el país de origen. Desde inicios de la década
+de 2000, las remesas han mostrado un crecimiento sostenido, convirtiéndose
+en una de las principales fuentes de divisas de Guatemala y superando en
+años recientes los ingresos por exportaciones tradicionales (Banco de
+Guatemala, 2025). El análisis de su dinámica temporal mediante modelos de
+regresión permite identificar patrones de crecimiento y apoyar la toma de
+decisiones en política económica.
 
 # Análisis de cada modelo
 
