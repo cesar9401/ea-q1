@@ -124,10 +124,58 @@ ggplot(lineal_df, aes(x = fecha, y = remesas)) +
 
 ## Modelo Potencial
 
-[Espacio para el análisis del modelo logarítmico.]
+## Modelo Potencial Multiplicativo
 
-```{r modelo-potencial-placeholder}
-# agregar potencial aqui
+El modelo potencial multiplicativo tiene la forma $Y = \beta_0 X^{\beta_1}\varepsilon$.
+Aplicando logaritmo se linealiza como $Y^* = \beta_0^* + \beta_1 X^* + \varepsilon^*$,
+con $Y^* = \ln(Y)$, $X^* = \ln(X)$ y $\beta_0^* = \ln(\beta_0)$. Se estima por MCO
+sobre la forma linealizada y se regresa a la escala original con $\beta_0 = e^{\beta_0^*}$.
+
+```{r modelo-potencial}
+# Ajuste linealizado: ln(Y) = ln(b0) + b1 * ln(X)
+modelo_potencial <- lm(log(remesas) ~ log(t), data = remesas_long)
+
+b0_star <- coef(modelo_potencial)[1]
+b1      <- coef(modelo_potencial)[2]
+b0      <- exp(b0_star)
+
+potencial_df <- remesas_long %>%
+  mutate(
+    ajuste_log       = fitted(modelo_potencial),
+    ajuste_potencial = exp(ajuste_log),
+    residuo          = remesas - ajuste_potencial
+  )
+
+summary(modelo_potencial)
+cat(sprintf("\nEcuacion ajustada: Y = %.4f * X^%.4f\n", b0, b1))
+```
+
+### Gráfica 1: Ajuste sobre la serie
+
+```{r potencial-ajuste, fig.width=9, fig.height=5}
+ggplot(potencial_df, aes(x = fecha)) +
+  geom_point(aes(y = remesas, color = "Observado"), alpha = 0.7) +
+  geom_line(aes(y = ajuste_potencial, color = "Ajuste potencial"), linewidth = 1) +
+  scale_color_manual(NULL, values = c("Observado" = "#1f4e79",
+                                      "Ajuste potencial" = "#ffc600")) +
+  labs(title = "Modelo potencial multiplicativo: Y = b0 * X^b1",
+       subtitle = sprintf("Y = %.3f * X^%.3f", b0, b1),
+       x = "Fecha", y = "Remesas (millones USD)") +
+  theme_light() +
+  theme(legend.position = "top")
+```
+
+### Gráfica 2: Linealización log-log
+
+```{r potencial-loglog, fig.width=9, fig.height=5}
+ggplot(potencial_df, aes(x = log(t), y = log(remesas))) +
+  geom_point(color = "#1f4e79", alpha = 0.7) +
+  geom_abline(intercept = b0_star, slope = b1,
+              color = "#ffc600", linewidth = 1) +
+  labs(title = "Linealizacion: Y* = b0* + b1*X*",
+       subtitle = sprintf("ln(Y) = %.4f + %.4f * ln(X)", b0_star, b1),
+       x = "X* = ln(t)", y = "Y* = ln(remesas)") +
+  theme_light()
 ```
 
 # Pruebas de hipótesis
