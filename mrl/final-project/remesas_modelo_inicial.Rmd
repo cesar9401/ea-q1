@@ -253,20 +253,72 @@ Es útil cuando al principio hay un crecimiento muy rápido que luego se estabil
 
 $y = \beta_0 + \beta_1 \ln(x)$
 
-```{r modelo-logaritmico-placeholder}
-# Ajuste del modelo logarítmico usando remesas_long
-modelo_logaritmico <- lm(remesas ~ log(t), data = remesas_long)
+### 1) Definición del modelo
 
-# Nuevo objeto para evaluación y gráfica
+```{r modelo-logaritmico-definicion}
+modelo_logaritmico <- lm(remesas ~ log(t), data = remesas_long)
+```
+
+### 2) Resumen del modelo
+
+```{r modelo-logaritmico-resumen, echo = FALSE}
+resumen_logaritmico <- summary(modelo_logaritmico)
+
+coeficientes_logaritmico <- as.data.frame(coef(resumen_logaritmico))
+coeficientes_logaritmico$Termino <- rownames(coeficientes_logaritmico)
+coeficientes_logaritmico <- coeficientes_logaritmico %>%
+  select(Termino, Estimate, `Std. Error`, `t value`, `Pr(>|t|)`)
+
+fstat_logaritmico <- resumen_logaritmico$fstatistic
+pvalor_global_logaritmico <- pf(
+  fstat_logaritmico[1],
+  fstat_logaritmico[2],
+  fstat_logaritmico[3],
+  lower.tail = FALSE
+)
+
+metricas_logaritmico <- data.frame(
+  Metrica = c("R^2", "R^2 ajustado", "p-value global (F-test)"),
+  Valor = c(
+    resumen_logaritmico$r.squared,
+    resumen_logaritmico$adj.r.squared,
+    pvalor_global_logaritmico
+  )
+)
+
+kable(
+  coeficientes_logaritmico,
+  digits = 4,
+  caption = "Coeficientes del modelo logaritmico"
+)
+
+kable(
+  metricas_logaritmico,
+  digits = 6,
+  caption = "Metricas principales del modelo logaritmico"
+)
+```
+
+### 3) Gráfica del modelo
+
+```{r modelo-logaritmico-grafica}
 logaritmico_df <- remesas_long %>%
   mutate(ajuste_logaritmico = fitted(modelo_logaritmico))
 
-# Gráfica de datos observados y ajuste
 ggplot(logaritmico_df, aes(x = fecha, y = remesas)) +
   geom_point(color = "#1f4e79", alpha = 0.7) +
   geom_line(aes(y = ajuste_logaritmico), color = "#ffc600", linewidth = 1) +
+  labs(
+    title = "Modelo logaritmico: datos observados y ajuste",
+    x = "Fecha",
+    y = "Remesas (millones de USD)"
+  ) +
   theme_light()
 ```
+
+### 4) Interpretación breve
+
+Con base en el valor de $R^2$ ajustado (`r sprintf("%.5f", resumen_logaritmico$adj.r.squared)`) y en la grafica de ajuste, el modelo logaritmico presenta un ajuste parcial para describir la serie de remesas. Aunque explica parte de la tendencia general, tiende a subestimar los aumentos acelerados en los periodos recientes.
 
 ## Modelo recíproco
 
@@ -274,11 +326,72 @@ Se utiliza cuando una variable disminuye hacia un límite (asíntota) a medida q
 
 $y = \beta_0 + \beta_1 \left(\frac{1}{x}\right)$
 
-[Espacio para el análisis del modelo recíproco.]
+### 1) Definición del modelo
 
-```{r modelo-reciproco-placeholder}
-# agregar reciproco aqui
+```{r modelo-reciproco-definicion}
+modelo_reciproco <- lm(remesas ~ I(1 / t), data = remesas_long)
 ```
+
+### 2) Resumen del modelo
+
+```{r modelo-reciproco-resumen, echo = FALSE}
+resumen_reciproco <- summary(modelo_reciproco)
+
+coeficientes_reciproco <- as.data.frame(coef(resumen_reciproco))
+coeficientes_reciproco$Termino <- rownames(coeficientes_reciproco)
+coeficientes_reciproco <- coeficientes_reciproco %>%
+  select(Termino, Estimate, `Std. Error`, `t value`, `Pr(>|t|)`)
+
+fstat_reciproco <- resumen_reciproco$fstatistic
+pvalor_global_reciproco <- pf(
+  fstat_reciproco[1],
+  fstat_reciproco[2],
+  fstat_reciproco[3],
+  lower.tail = FALSE
+)
+
+metricas_reciproco <- data.frame(
+  Metrica = c("R^2", "R^2 ajustado", "p-value global (F-test)"),
+  Valor = c(
+    resumen_reciproco$r.squared,
+    resumen_reciproco$adj.r.squared,
+    pvalor_global_reciproco
+  )
+)
+
+kable(
+  coeficientes_reciproco,
+  digits = 4,
+  caption = "Coeficientes del modelo reciproco"
+)
+
+kable(
+  metricas_reciproco,
+  digits = 6,
+  caption = "Metricas principales del modelo reciproco"
+)
+```
+
+### 3) Gráfica del modelo
+
+```{r modelo-reciproco-grafica}
+reciproco_df <- remesas_long %>%
+  mutate(ajuste_reciproco = fitted(modelo_reciproco))
+
+ggplot(reciproco_df, aes(x = fecha, y = remesas)) +
+  geom_point(color = "#1f4e79", alpha = 0.7) +
+  geom_line(aes(y = ajuste_reciproco), color = "#ffc600", linewidth = 1) +
+  labs(
+    title = "Modelo reciproco: datos observados y ajuste",
+    x = "Fecha",
+    y = "Remesas (millones de USD)"
+  ) +
+  theme_light()
+```
+
+### 4) Interpretación breve
+
+Con base en el valor de $R^2$ ajustado (`r sprintf("%.5f", resumen_reciproco$adj.r.squared)`) y en la grafica de ajuste, el modelo reciproco presenta un ajuste limitado para esta serie. La forma funcional reciproca no representa adecuadamente el crecimiento sostenido de las remesas a lo largo del tiempo.
 
 ## Modelo Potencial
 
