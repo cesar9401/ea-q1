@@ -13,6 +13,7 @@ library(readr)
 library(dplyr)
 library(tidyr)
 library(ggplot2)
+library(knitr)
 ```
 
 ## Cargar datos
@@ -23,7 +24,14 @@ remesas_wide <- read_csv(
   show_col_types = FALSE
 )
 
-head(remesas_wide)
+remesas_wide_muestra <- remesas_wide %>%
+  select(Mes, all_of(c("2002", "2003", "2004", "2023", "2024", "2025", "2026")))
+
+kable(
+  remesas_wide_muestra,
+  caption = "Tabla original (ancho): años 2002-2004 y 2023-2026"
+)
+
 ```
 
 ## Transformar de formato ancho a largo y construir indice temporal
@@ -51,10 +59,25 @@ remesas_long <- remesas_wide %>%
   ) %>%
   arrange(fecha) %>%
   mutate(t = row_number())
+```
 
-head(remesas_long)
-tail(remesas_long)
-nrow(remesas_long)
+```{r remesas-long-head}
+kable(
+  head(remesas_long),
+  caption = "Primeras filas de remesas_long (formato largo)"
+)
+```
+
+```{r total-observaciones}
+resumen_observaciones <- data.frame(
+  Metrica = "Numero total de observaciones",
+  Valor = nrow(remesas_long)
+)
+
+kable(
+  resumen_observaciones,
+  caption = "Resumen de observaciones"
+)
 ```
 
 # Introducción
@@ -80,25 +103,82 @@ nrow(remesas_long)
 # Análisis de cada modelo
 
 ## Modelo lineal
+Asume que el cambio en $y$ es constante por cada unidad que aumenta $x$. Es una línea recta perfecta.
 
-[Espacio para el análisis del modelo lineal.]
+$y = \beta_0 + \beta_1 x$
 
-```{r modelo-lineal-placeholder}
-# Ajuste del modelo lineal usando remesas_long
+### 1) Definición del modelo
+
+```{r modelo-lineal-definicion}
 modelo_lineal <- lm(remesas ~ t, data = remesas_long)
+```
 
-# Nuevo objeto para evaluación y gráfica
+### 2) Resumen del modelo
+
+```{r modelo-lineal-resumen, echo = FALSE}
+resumen_lineal <- summary(modelo_lineal)
+
+coeficientes_lineal <- as.data.frame(coef(resumen_lineal))
+coeficientes_lineal$Termino <- rownames(coeficientes_lineal)
+coeficientes_lineal <- coeficientes_lineal %>%
+  select(Termino, Estimate, `Std. Error`, `t value`, `Pr(>|t|)`)
+
+fstat_lineal <- resumen_lineal$fstatistic
+pvalor_global_lineal <- pf(
+  fstat_lineal[1],
+  fstat_lineal[2],
+  fstat_lineal[3],
+  lower.tail = FALSE
+)
+
+metricas_lineal <- data.frame(
+  Metrica = c("R^2", "R^2 ajustado", "p-value global (F-test)"),
+  Valor = c(
+    resumen_lineal$r.squared,
+    resumen_lineal$adj.r.squared,
+    pvalor_global_lineal
+  )
+)
+
+kable(
+  coeficientes_lineal,
+  digits = 4,
+  caption = "Coeficientes del modelo lineal"
+)
+
+kable(
+  metricas_lineal,
+  digits = 6,
+  caption = "Metricas principales del modelo lineal"
+)
+```
+
+### 3) Gráfica del modelo
+
+```{r modelo-lineal-grafica}
 lineal_df <- remesas_long %>%
   mutate(ajuste_lineal = fitted(modelo_lineal))
 
-# Gráfica de datos observados y ajuste
 ggplot(lineal_df, aes(x = fecha, y = remesas)) +
   geom_point(color = "#1f4e79", alpha = 0.7) +
   geom_line(aes(y = ajuste_lineal), color = "#ffc600", linewidth = 1) +
+  labs(
+    title = "Modelo lineal: datos observados y ajuste",
+    x = "Fecha",
+    y = "Remesas (millones de USD)"
+  ) +
   theme_light()
 ```
 
+### 4) Interpretación breve
+
+Con base en el valor de $R^2$ (`r sprintf("%.5f", resumen_lineal$adj.r.squared)`) y en la grafica de ajuste, el modelo lineal presenta un buen ajuste para describir la serie de remesas en todo el periodo analizado. Sin embargo, según se observa, es posible que el modelo no sea adecuado para describir la variabilidad de las remesas en el tiempo. En particular, el modelo lineal no captura el crecimiento acelerado que se observa a partir de 2020, lo que sugiere que modelos con formas funcionales más flexibles podrían ser más apropiados para describir la dinámica de las remesas en este periodo.
+
 ## Modelo exponencial
+
+Se usa cuando la variable crece (o decrece) a una tasa porcentual constante. Es muy común en finanzas y crecimiento poblacional.
+
+$\ln(y) = \beta_0 + \beta_1 x$
 
 [Espacio para el análisis del modelo exponencial.]
 
@@ -118,6 +198,10 @@ plot(remesas_long$t, formula(remesas_long$t),
 
 ## Modelo logarítmico
 
+Es útil cuando al principio hay un crecimiento muy rápido que luego se estabiliza o se vuelve más lento con el tiempo.
+
+$y = \beta_0 + \beta_1 \ln(x)$
+
 ```{r modelo-logaritmico-placeholder}
 # Ajuste del modelo logarítmico usando remesas_long
 modelo_logaritmico <- lm(remesas ~ log(t), data = remesas_long)
@@ -134,6 +218,10 @@ ggplot(logaritmico_df, aes(x = fecha, y = remesas)) +
 ```
 
 ## Modelo recíproco
+
+Se utiliza cuando una variable disminuye hacia un límite (asíntota) a medida que la otra aumenta, o viceversa.
+
+$y = \beta_0 + \beta_1 \left(\frac{1}{x}\right)$
 
 [Espacio para el análisis del modelo recíproco.]
 
