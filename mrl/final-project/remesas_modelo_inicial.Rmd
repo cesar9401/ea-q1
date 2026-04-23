@@ -393,61 +393,86 @@ ggplot(reciproco_df, aes(x = fecha, y = remesas)) +
 
 Con base en el valor de $R^2$ ajustado (`r sprintf("%.5f", resumen_reciproco$adj.r.squared)`) y en la grafica de ajuste, el modelo reciproco presenta un ajuste limitado para esta serie. La forma funcional reciproca no representa adecuadamente el crecimiento sostenido de las remesas a lo largo del tiempo.
 
-## Modelo Potencial
+## Modelo potencial
 
-## Modelo Potencial Multiplicativo
+Es útil cuando el crecimiento (o decrecimiento) acelera a una tasa proporcional al valor actual, muy común en fenómenos financieros y demográficos.
 
-El modelo potencial multiplicativo tiene la forma $Y = \beta_0 X^{\beta_1}\varepsilon$.
-Aplicando logaritmo se linealiza como $Y^* = \beta_0^* + \beta_1 X^* + \varepsilon^*$,
-con $Y^* = \ln(Y)$, $X^* = \ln(X)$ y $\beta_0^* = \ln(\beta_0)$. Se estima por MCO
-sobre la forma linealizada y se regresa a la escala original con $\beta_0 = e^{\beta_0^*}$.
+$Y = \beta_0 X^{\beta_1}\varepsilon$
 
-```{r modelo-potencial}
-# Ajuste linealizado: ln(Y) = ln(b0) + b1 * ln(X)
+Aplicando logaritmo se linealiza como $Y^* = \beta_0^* + \beta_1 X^* + \varepsilon^*$, con $Y^* = \ln(Y)$, $X^* = \ln(X)$ y $\beta_0^* = \ln(\beta_0)$. Se estima por MCO sobre la forma linealizada y se regresa a la escala original con $\beta_0 = e^{\beta_0^*}$.
+
+### 1) Definición del modelo
+
+```{r modelo-potencial-definicion}
 modelo_potencial <- lm(log(remesas) ~ log(t), data = remesas_long)
 
 b0_star <- coef(modelo_potencial)[1]
-b1 <- coef(modelo_potencial)[2]
-b0 <- exp(b0_star)
+b1_potencial <- coef(modelo_potencial)[2]
+b0_potencial <- exp(b0_star)
+```
 
-potencial_df <- remesas_long %>%
-  mutate(
-    ajuste_log = fitted(modelo_potencial),
-    ajuste_potencial = exp(ajuste_log),
-    residuo = remesas - ajuste_potencial
+### 2) Resumen del modelo
+
+```{r modelo-potencial-resumen, echo = FALSE}
+resumen_potencial <- summary(modelo_potencial)
+
+coeficientes_potencial <- as.data.frame(coef(resumen_potencial))
+coeficientes_potencial$Termino <- rownames(coeficientes_potencial)
+coeficientes_potencial <- coeficientes_potencial %>%
+  select(Termino, Estimate, `Std. Error`, `t value`, `Pr(>|t|)`)
+
+fstat_potencial <- resumen_potencial$fstatistic
+pvalor_global_potencial <- pf(
+  fstat_potencial[1],
+  fstat_potencial[2],
+  fstat_potencial[3],
+  lower.tail = FALSE
+)
+
+metricas_potencial <- data.frame(
+  Metrica = c("R^2", "R^2 ajustado", "p-value global (F-test)", "Ecuacion ajustada"),
+  Valor = c(
+    resumen_potencial$r.squared,
+    resumen_potencial$adj.r.squared,
+    pvalor_global_potencial,
+    sprintf("Y = %.4f * X^%.4f", b0_potencial, b1_potencial)
   )
+)
 
-summary(modelo_potencial)
-cat(sprintf("\nEcuacion ajustada: Y = %.4f * X^%.4f\n", b0, b1))
+kable(
+  coeficientes_potencial,
+  digits = 4,
+  caption = "Coeficientes del modelo potencial"
+)
+
+kable(
+  metricas_potencial,
+  digits = 6,
+  caption = "Metricas principales del modelo potencial"
+)
 ```
 
-### Gráfica 1: Ajuste sobre la serie
+### 3) Gráfica del modelo
 
-```{r potencial-ajuste, fig.width=9, fig.height=5}
-ggplot(potencial_df, aes(x = fecha)) +
-  geom_point(aes(y = remesas, color = "Observado"), alpha = 0.7) +
-  geom_line(aes(y = ajuste_potencial, color = "Ajuste potencial"), linewidth = 1) +
-  scale_color_manual(NULL, values = c("Observado" = "#1f4e79",
-                                      "Ajuste potencial" = "#ffc600")) +
-  labs(title = "Modelo potencial multiplicativo: Y = b0 * X^b1",
-       subtitle = sprintf("Y = %.3f * X^%.3f", b0, b1),
-       x = "Fecha", y = "Remesas (millones USD)") +
-  theme_light() +
-  theme(legend.position = "top")
-```
+```{r modelo-potencial-grafica}
+potencial_df <- remesas_long %>%
+  mutate(ajuste_potencial = exp(fitted(modelo_potencial)))
 
-### Gráfica 2: Linealización log-log
-
-```{r potencial-loglog, fig.width=9, fig.height=5}
-ggplot(potencial_df, aes(x = log(t), y = log(remesas))) +
+ggplot(potencial_df, aes(x = fecha, y = remesas)) +
   geom_point(color = "#1f4e79", alpha = 0.7) +
-  geom_abline(intercept = b0_star, slope = b1,
-              color = "#ffc600", linewidth = 1) +
-  labs(title = "Linealizacion: Y* = b0* + b1*X*",
-       subtitle = sprintf("ln(Y) = %.4f + %.4f * ln(X)", b0_star, b1),
-       x = "X* = ln(t)", y = "Y* = ln(remesas)") +
+  geom_line(aes(y = ajuste_potencial), color = "#ffc600", linewidth = 1) +
+  labs(
+    title = "Modelo potencial: datos observados y ajuste",
+    subtitle = sprintf("Y = %.3f * X^%.3f", b0_potencial, b1_potencial),
+    x = "Fecha",
+    y = "Remesas (millones de USD)"
+  ) +
   theme_light()
 ```
+
+### 4) Interpretación breve
+
+Con base en el valor de $R^2$ ajustado (`r sprintf("%.5f", resumen_potencial$adj.r.squared)`) y en la grafica de ajuste, el modelo potencial presenta un ajuste parcial para describir la serie de remesas. Este modelo captura mejor que el lineal el crecimiento acelerado, aunque no captura fenomenos de corto plazo como estacionalidad.
 
 # Pruebas de hipótesis
 
