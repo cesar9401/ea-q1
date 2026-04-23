@@ -84,7 +84,27 @@ kable(
 
 # Introducción
 
-[Escriba aquí la introducción del proyecto.]
+Por medio del uso de la estadística paramétrica, nos permite ampliar información
+en una base de datos, recopilada, de una o más poblaciones, siendo el objeto de 
+estudio preferentemente requerido por el investigador, por medio de las variables 
+cualitativas, siendo medibles en el tiempo, se pueden observar ciclos, o reincidencias
+de los fenómenos. Con ese preámbulo, hemos obtenido a través de información libre, 
+en nuestra región, una base de datos por medio del banco de Guatemala, promedio de 
+millones de quetzales de remesas efectuadas del exterior, hacia las familias 
+de la localidad.
+
+Las remesas familiares representan uno de los flujos económicos más importantes
+para Guatemala, constituyendo una fuente significativa de ingresos para miles
+de hogares en todo el país. Desde el año 2002, estas transferencias han mostrado
+un crecimiento sostenido, impulsado principalmente por la comunidad guatemalteca
+residente en Estados Unidos.
+
+La base de datos utilizada esta integrada y corresponde a los años del 2002 al 2026,
+las cuales se pueden presentar con fenómenos con temporadas altos y bajos, además 
+se puede observar las influencias que corresponde en los primeros años y la 
+tendencia de llevarlo al alza. Además, se aplicaron a la base datos, los modelos 
+de regresión lineal, modelos de regresión múltiple, y pruebas de hipótesis para 
+comprender si presenta efecto significativo hacia el modelo global aplicado.
 
 # Objetivos
 
@@ -164,14 +184,21 @@ los residuos.
 ## Remesas familiares en Guatemala
 
 Las remesas familiares constituyen transferencias monetarias enviadas por
-migrantes guatemaltecos residentes en el exterior, principalmente en Estados
-Unidos, hacia sus familias en el país de origen. Desde inicios de la década
-de 2000, las remesas han mostrado un crecimiento sostenido, convirtiéndose
-en una de las principales fuentes de divisas de Guatemala y superando en
-años recientes los ingresos por exportaciones tradicionales (Banco de
-Guatemala, 2025). El análisis de su dinámica temporal mediante modelos de
-regresión permite identificar patrones de crecimiento y apoyar la toma de
-decisiones en política económica.
+migrantes residentes en el exterior, principalmente en Estados Unidos, hacia
+sus familias en el país de origen, con el fin de subsidiar los gastos del
+hogar. Su naturaleza economica presenta dos caracteristicas distintivas:
+en primer lugar, son bienes intercambiables que se gastan como un ingreso
+de cualquier otra fuente; en segundo lugar, su recepcion en el hogar puede
+alterar el comportamiento del consumo, orientandose mayoritariamente hacia
+bienes de consumo en lugar de bienes de inversion (definir autor si tienes
+uno para esta parte).
+
+Desde inicios de la decada de 2000, las remesas en Guatemala han mostrado
+un crecimiento sostenido, convirtiendose en una de las principales fuentes
+de divisas del pais y superando en anos recientes los ingresos por
+exportaciones tradicionales (Banco de Guatemala, 2025). El analisis de su
+dinamica temporal mediante modelos de regresion permite identificar patrones
+de crecimiento y apoyar la toma de decisiones en politica economica.
 
 # Análisis de cada modelo
 
@@ -549,15 +576,71 @@ Con base en el valor de $R^2$ ajustado (`r sprintf("%.5f", resumen_potencial$adj
 
 # Pruebas de hipótesis
 
-[Espacio para documentar las pruebas de hipótesis de cada modelo.]
+Para cada modelo se evalúa si el predictor temporal $t$ tiene efecto
+significativo sobre las remesas, con nivel de significancia $\alpha = 0.05$.
 
 ## Hipótesis del modelo lineal
 
-[Planteamiento y resultados.]
+**Planteamiento:**
+
+El modelo ajustado es:
+
+$$\hat{y} = \beta_0 + \beta_1 t + \varepsilon$$
+
+- $H_0: \beta_1 = 0$ — El tiempo no tiene efecto lineal sobre las remesas
+- $H_1: \beta_1 \neq 0$ — El tiempo sí tiene efecto significativo
+
+**Resultados:**
+
+```{r hipotesis-lineal}
+summary(modelo_lineal)
+```
+
+**Interpretación:**
+
+- El **p-value** del coeficiente $t$ es < 2e-16, muy por debajo de 0.05,
+  por lo que se rechaza $H_0$. Por cada mes adicional, las remesas aumentan
+  en promedio **\$6.09 millones**.
+- El **$R^2$ = 0.7927** indica que el modelo explica el **79.27%** de la
+  variabilidad en remesas. Aunque es un ajuste aceptable, la gráfica muestra
+  que el modelo subestima el crecimiento acelerado a partir de 2020.
+- El **estadístico F** con p-value < 2.2e-16 confirma la significancia
+  global del modelo.
+
+En conclusión, el modelo lineal es significativo pero su forma funcional
+no es suficientemente flexible para capturar el crecimiento no lineal
+de las remesas en el periodo reciente.
 
 ## Hipótesis del modelo exponencial
 
-[Planteamiento y resultados.]
+**Planteamiento:**
+
+El modelo exponencial $Y = \beta_0 e^{\beta_1 t}\varepsilon$ se linealiza como:
+
+$$\ln(Y) = \beta_0^* + \beta_1 t + \varepsilon^*$$
+
+- $H_0: \beta_1 = 0$ — El tiempo no tiene efecto exponencial sobre las remesas
+- $H_1: \beta_1 \neq 0$ — El tiempo sí tiene efecto significativo
+
+**Resultados:**
+
+```{r hipotesis-exponencial}
+summary(modelo_exponencial)
+```
+
+**Interpretación:**
+
+- El **p-value** del coeficiente $t$ es < 2e-16, por lo que se rechaza $H_0$.
+  El coeficiente $\hat{\beta}_1 = 0.0088$ indica que las remesas crecen
+  aproximadamente un **0.88% por mes** en escala logarítmica.
+- El **$R^2$ = 0.9470** en la escala linealizada es el más alto de todos los
+  modelos evaluados, indicando que el modelo exponencial explica el **94.70%**
+  de la variabilidad de $\ln(\text{remesas})$.
+- El **estadístico F** con p-value < 2.2e-16 confirma la significancia global.
+
+En conclusión, el modelo exponencial presenta el mejor $R^2$ entre todos los
+modelos y captura adecuadamente el crecimiento acelerado de las remesas,
+siendo una de las opciones más adecuadas para esta serie.
 
 ## Hipótesis del modelo logarítmico
 
@@ -567,9 +650,7 @@ El modelo ajustado es:
 
 $$\hat{y} = \beta_0 + \beta_1 \ln(t) + \varepsilon$$
 
-Se plantean las siguientes hipótesis para evaluar si el índice temporal (en escala logarítmica) tiene efecto significativo sobre las remesas:
-
-- $H_0: \beta_1 = 0$ — El tiempo no tiene efecto lineal sobre $\ln(t)$
+- $H_0: \beta_1 = 0$ — El tiempo no tiene efecto sobre $\ln(t)$
 - $H_1: \beta_1 \neq 0$ — El tiempo sí tiene efecto significativo
 
 **Resultados:**
@@ -580,39 +661,278 @@ summary(modelo_logaritmico)
 
 **Interpretación:**
 
-Del `summary()` se observa:
+- El **p-value** del coeficiente `log(t)` es < 2e-16, por lo que se rechaza
+  $H_0$. Por cada unidad que aumenta $\ln(t)$, las remesas aumentan en
+  promedio **\$401.08 millones**.
+- El **$R^2$ = 0.4527** indica que el modelo explica apenas el **45.27%**
+  de la variabilidad. El modelo logarítmico no captura bien el crecimiento
+  acelerado observado a partir de 2020.
+- El **estadístico F = 239.1** con p-value < 2.2e-16 confirma significancia
+  global, aunque la capacidad explicativa es limitada.
 
-- El **p-value** del coeficiente `log(t)` es < 2e-16, muy por debajo de 0.05,
-por lo que se rechaza $H_0$ y se concluye que el tiempo (en escala logarítmica)
-tiene un efecto significativo sobre las remesas. Por cada unidad que aumenta
-$\ln(t)$, las remesas aumentan en promedio **Q401.08 millones**.
-
-- El **$R^2$ = 0.4527**, lo que indica que el modelo explica apenas el **45.27%**
-de la variabilidad total en las remesas. Esto sugiere que el modelo logarítmico
-**no captura bien** el comportamiento de los datos, especialmente el crecimiento
-acelerado observado a partir de 2020.
-
-- El **estadístico F = 239.1** con p-value < 2.2e-16 confirma que el modelo es
-globalmente significativo, aunque su capacidad explicativa es limitada dado el
-bajo $R^2$.
-
-En conclusión, si bien el modelo logarítmico es estadísticamente significativo,
-un $R^2$ de 0.45 indica un ajuste moderado-bajo. Se esperaría que modelos como
-el **exponencial o potencial** logren un mejor ajuste dado el patrón de
-crecimiento acelerado en los datos.
+En conclusión, el modelo logarítmico es estadísticamente significativo pero
+con ajuste moderado-bajo ($R^2 = 0.45$), siendo el menos recomendable junto
+al recíproco para describir esta serie.
 
 ## Hipótesis del modelo recíproco
 
-[Planteamiento y resultados.]
+**Planteamiento:**
+
+El modelo recíproco tiene la forma:
+
+$$\hat{y} = \beta_0 + \beta_1 \frac{1}{t} + \varepsilon$$
+
+- $H_0: \beta_1 = 0$ — El inverso del tiempo no tiene efecto sobre las remesas
+- $H_1: \beta_1 \neq 0$ — El inverso del tiempo sí tiene efecto significativo
+
+**Resultados:**
+
+```{r hipotesis-reciproco}
+summary(modelo_reciproco)
+```
+
+**Interpretación:**
+
+- El **p-value** del coeficiente $1/t$ es 0.0001, menor a 0.05, por lo que
+  se rechaza $H_0$. El coeficiente negativo ($\hat{\beta}_1 = -1836.88$)
+  indica que conforme $t$ crece, el término $1/t$ se aproxima a cero y
+  las remesas convergen hacia la constante $\hat{\beta}_0 = 755.53$.
+- El **$R^2$ = 0.0530** es el más bajo de todos los modelos, explicando
+  apenas el **5.30%** de la variabilidad. El modelo es prácticamente
+  incapaz de describir la tendencia de la serie.
+- Aunque el modelo es estadísticamente significativo (p-value < 0.05),
+  su ajuste es inaceptable para fines predictivos.
+
+En conclusión, el modelo recíproco es el menos adecuado para esta serie.
+Su comportamiento asintótico es opuesto al patrón observado: las remesas
+crecen sostenidamente, mientras el modelo converge a una constante.
+
+## Hipótesis del modelo potencial
+
+**Planteamiento:**
+
+El modelo potencial $Y = \beta_0 t^{\beta_1}\varepsilon$ se linealiza como:
+
+$$\ln(Y) = \beta_0^* + \beta_1 \ln(t) + \varepsilon^*$$
+
+- $H_0: \beta_1 = 0$ — El tiempo no tiene efecto potencial sobre las remesas
+- $H_1: \beta_1 \neq 0$ — El tiempo sí tiene efecto significativo
+
+**Resultados:**
+
+```{r hipotesis-potencial}
+summary(modelo_potencial)
+cat(sprintf("\nEcuacion ajustada: Y = %.4f * t^%.4f\n", b0_potencial, b1_potencial))
+```
+
+**Interpretación:**
+
+- El **p-value** del coeficiente `log(t)` es < 2e-16, por lo que se rechaza
+  $H_0$. El exponente $\hat{\beta}_1 = 0.6868$ indica que por cada 1%
+  de aumento en $t$, las remesas crecen aproximadamente un **0.69%**.
+- El **$R^2$ = 0.7509** indica que el modelo explica el **75.09%** de la
+  variabilidad de $\ln(\text{remesas})$, segundo mejor ajuste tras el
+  exponencial.
+- La ecuación ajustada es $\hat{Y} = 21.37 \cdot t^{0.6868}$, reflejando
+  un crecimiento sublineal pero sostenido.
+- El **estadístico F = 871** con p-value < 2.2e-16 confirma solidez global.
+
+En conclusión, el modelo potencial es estadísticamente significativo y
+presenta buen ajuste, siendo junto al exponencial uno de los modelos
+más apropiados para describir la dinámica de las remesas guatemaltecas.
+
 
 # Diagnósticos
 
-[Espacio para diagnósticos de supuestos y residuos de cada modelo.]
+Se evalúan los supuestos de los residuos para cada modelo: normalidad,
+homocedasticidad e independencia.
+
+```{r diagnosticos, fig.width=9, fig.height=6}
+par(mfrow = c(2, 3))
+
+# Residuos de cada modelo (en escala original donde aplica)
+res_lineal      <- residuals(modelo_lineal)
+res_exponencial <- residuals(modelo_exponencial)   # escala log
+res_logaritmico <- residuals(modelo_logaritmico)
+res_reciproco   <- residuals(modelo_reciproco)
+res_potencial   <- residuals(modelo_potencial)     # escala log
+
+# Gráficas residuos vs ajustados
+plot(fitted(modelo_lineal), res_lineal,
+     main = "Lineal: Residuos vs Ajustados",
+     xlab = "Valores ajustados", ylab = "Residuos",
+     col = "#1f4e79", pch = 19, cex = 0.6)
+abline(h = 0, col = "#ffc600", lwd = 2)
+
+plot(fitted(modelo_exponencial), res_exponencial,
+     main = "Exponencial: Residuos vs Ajustados",
+     xlab = "Valores ajustados", ylab = "Residuos",
+     col = "#1f4e79", pch = 19, cex = 0.6)
+abline(h = 0, col = "#ffc600", lwd = 2)
+
+plot(fitted(modelo_logaritmico), res_logaritmico,
+     main = "Logarítmico: Residuos vs Ajustados",
+     xlab = "Valores ajustados", ylab = "Residuos",
+     col = "#1f4e79", pch = 19, cex = 0.6)
+abline(h = 0, col = "#ffc600", lwd = 2)
+
+plot(fitted(modelo_reciproco), res_reciproco,
+     main = "Recíproco: Residuos vs Ajustados",
+     xlab = "Valores ajustados", ylab = "Residuos",
+     col = "#1f4e79", pch = 19, cex = 0.6)
+abline(h = 0, col = "#ffc600", lwd = 2)
+
+plot(fitted(modelo_potencial), res_potencial,
+     main = "Potencial: Residuos vs Ajustados",
+     xlab = "Valores ajustados", ylab = "Residuos",
+     col = "#1f4e79", pch = 19, cex = 0.6)
+abline(h = 0, col = "#ffc600", lwd = 2)
+```
+
+**Residuos vs. Valores ajustados:**
+
+En el modelo lineal se observa una tendencia clara en forma de abanico: los
+residuos son pequeños al inicio y se dispersan cada vez más hacia la derecha,
+lo que indica que el modelo subestima los valores más altos de la serie.
+El modelo exponencial muestra los puntos más dispersos alrededor de cero sin
+un patrón tan marcado, aunque aparecen algunos valores atípicos en la parte
+superior. El modelo logarítmico y el recíproco presentan patrones muy
+pronunciados en forma de curva, confirmando que ninguno de los dos logra
+seguir bien la tendencia de los datos. El modelo potencial muestra un
+comportamiento similar al exponencial, con residuos más concentrados al
+centro pero con algunos puntos alejados en los valores bajos de t.
+
+```{r diagnosticos-qq, fig.width=9, fig.height=6}
+par(mfrow = c(2, 3))
+
+qqnorm(res_lineal,      main = "Q-Q: Lineal",      col = "#1f4e79", pch = 19, cex = 0.6)
+qqline(res_lineal,      col = "#ffc600", lwd = 2)
+
+qqnorm(res_exponencial, main = "Q-Q: Exponencial", col = "#1f4e79", pch = 19, cex = 0.6)
+qqline(res_exponencial, col = "#ffc600", lwd = 2)
+
+qqnorm(res_logaritmico, main = "Q-Q: Logarítmico", col = "#1f4e79", pch = 19, cex = 0.6)
+qqline(res_logaritmico, col = "#ffc600", lwd = 2)
+
+qqnorm(res_reciproco,   main = "Q-Q: Recíproco",   col = "#1f4e79", pch = 19, cex = 0.6)
+qqline(res_reciproco,   col = "#ffc600", lwd = 2)
+
+qqnorm(res_potencial,   main = "Q-Q: Potencial",   col = "#1f4e79", pch = 19, cex = 0.6)
+qqline(res_potencial,   col = "#ffc600", lwd = 2)
+```
+
+**Gráficos Q-Q:**
+
+El modelo exponencial es el que mejor se ajusta a la línea diagonal,
+especialmente en la parte central, aunque presenta algunas desviaciones
+en los extremos. El modelo lineal también sigue razonablemente la línea
+en el centro, pero se aleja en los extremos superiores, lo que refleja
+que los valores más recientes de la serie no son bien capturados. Los
+modelos logarítmico y recíproco muestran las mayores desviaciones respecto
+a la línea diagonal, con puntos muy alejados tanto en el extremo inferior
+como en el superior. El modelo potencial tiene un comportamiento intermedio,
+con desviaciones notables en los valores extremos.
+
+En general, el modelo exponencial es el que presenta los residuos más
+cercanos a los supuestos esperados, lo cual es consistente con su mayor
+$R^2$ y con el patrón de crecimiento observado en las remesas guatemaltecas.
+
+## Pruebas formales de supuestos
+
+Se aplican tres pruebas formales sobre los residuos de cada modelo con
+nivel de significancia $\alpha = 0.05$: Jarque-Bera (normalidad),
+Breusch-Pagan (homocedasticidad) y Durbin-Watson (independencia).
+
+```{r pruebas-formales, echo=FALSE}
+prueba_supuestos <- function(modelo, nombre, residuos) {
+  jb <- jarque.bera.test(residuos)
+  bp <- bptest(modelo)
+  dw <- dwtest(modelo)
+  data.frame(
+    Modelo         = nombre,
+    JB_estadistico = round(as.numeric(jb$statistic), 3),
+    JB_pvalue      = round(jb$p.value, 4),
+    BP_estadistico = round(as.numeric(bp$statistic), 3),
+    BP_pvalue      = round(bp$p.value, 4),
+    DW_estadistico = round(as.numeric(dw$statistic), 3),
+    DW_pvalue      = round(dw$p.value, 4)
+  )
+}
+
+resultados_supuestos <- rbind(
+  prueba_supuestos(modelo_lineal,      "Lineal",      res_lineal),
+  prueba_supuestos(modelo_exponencial, "Exponencial", res_exponencial),
+  prueba_supuestos(modelo_logaritmico, "Logaritmico", res_logaritmico),
+  prueba_supuestos(modelo_reciproco,   "Reciproco",   res_reciproco),
+  prueba_supuestos(modelo_potencial,   "Potencial",   res_potencial)
+)
+
+kable(
+  resultados_supuestos,
+  caption = "Pruebas formales de supuestos de regresion (nivel de significancia 0.05)",
+  col.names = c("Modelo",
+                "JB Estadistico", "JB p-value",
+                "BP Estadistico", "BP p-value",
+                "DW Estadistico", "DW p-value")
+)
+```
+
+**Interpretacion de las pruebas formales:**
+
+- **Jarque-Bera (normalidad):** $H_0$: los residuos son normales. Un p-value
+  menor a 0.05 indica rechazo de normalidad. El modelo exponencial es el que
+  mas se acerca al cumplimiento de este supuesto.
+
+- **Breusch-Pagan (homocedasticidad):** $H_0$: la varianza de los residuos es
+  constante. Un p-value menor a 0.05 indica heterocedasticidad. El modelo lineal
+  presenta heterocedasticidad marcada, consistente con el patron de abanico
+  observado visualmente. El modelo exponencial muestra el mejor comportamiento
+  en este supuesto.
+
+- **Durbin-Watson (independencia):** Un estadistico cercano a 2 indica ausencia
+  de autocorrelacion. Dado que los datos conforman una serie de tiempo mensual,
+  es esperable encontrar algun grado de autocorrelacion en todos los modelos.
+  Esto no invalida el analisis comparativo, pero sugiere que para proyecciones
+  precisas seria conveniente complementar con modelos de series de tiempo
+  (por ejemplo, SARIMA).
 
 # Conclusiones
 
-[Escriba aquí las conclusiones del proyecto.]
+- Se ajustaron cinco modelos de regresión sobre 291 observaciones mensuales
+  de remesas familiares de Guatemala (enero 2002 a marzo 2026). Todos los
+  modelos resultaron estadísticamente significativos con p-value < 0.05.
+
+- El **modelo exponencial** obtuvo el mayor $R^2$ (0.9470) calculado sobre
+  $\ln(\text{remesas})$, siendo el que mejor describe la variabilidad de la
+  serie en escala logaritmica y visualmente en escala original. Cabe aclarar
+  que este $R^2$ no es directamente comparable con los modelos lineal,
+  logaritmico o reciproco, cuyo $R^2$ se calcula sobre la escala original.
+  En escala original, el **modelo lineal** presenta el segundo mejor ajuste
+  ($R^2 = 0.7927$), seguido del **modelo potencial** ($R^2 = 0.7509$ sobre
+  $\ln(\text{remesas})$).
+
+- El **modelo recíproco** presentó el ajuste más bajo ($R^2 = 0.0530$),
+  siendo inadecuado para modelar una serie con crecimiento sostenido. El
+  **modelo logarítmico** también mostró ajuste limitado ($R^2 = 0.4527$).
+
+- El crecimiento de las remesas guatemaltecas en el periodo analizado
+  responde mejor a una dinámica de tipo exponencial, consistente con el
+  aumento acelerado observado especialmente a partir de 2020.
 
 # Recomendaciones
 
-[Escriba aquí las recomendaciones finales.]
+- Se recomienda utilizar el **modelo exponencial** como modelo base para
+  describir y proyectar el comportamiento de las remesas en el corto plazo,
+  dado su superior ajuste ($R^2 = 0.947$).
+
+- Dado el crecimiento sostenido de las remesas durante el periodo analizado,
+  se recomienda que las instituciones públicas y privadas fortalezcan los
+  mecanismos de canalización productiva de estos recursos, orientándolos
+  hacia inversión, ahorro y emprendimiento familiar, maximizando así
+  su impacto en el desarrollo económico del país.
+
+- Considerando que las remesas se han consolidado como una de las principales
+  fuentes de divisas de Guatemala, se recomienda al Estado diseñar políticas
+  que reduzcan la vulnerabilidad económica ante posibles caídas en estos
+  flujos, diversificando las fuentes de ingreso externo del país.
+
