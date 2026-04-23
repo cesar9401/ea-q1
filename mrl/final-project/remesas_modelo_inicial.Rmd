@@ -108,10 +108,19 @@ ggplot(lineal_df, aes(x = fecha, y = remesas)) +
 
 ## Modelo logarítmico
 
-[Espacio para el análisis del modelo logarítmico.]
-
 ```{r modelo-logaritmico-placeholder}
-# agregar logaritmico aqui
+# Ajuste del modelo logarítmico usando remesas_long
+modelo_logaritmico <- lm(remesas ~ log(t), data = remesas_long)
+
+# Nuevo objeto para evaluación y gráfica
+logaritmico_df <- remesas_long %>%
+  mutate(ajuste_logaritmico = fitted(modelo_logaritmico))
+
+# Gráfica de datos observados y ajuste
+ggplot(logaritmico_df, aes(x = fecha, y = remesas)) +
+  geom_point(color = "#1f4e79", alpha = 0.7) +
+  geom_line(aes(y = ajuste_logaritmico), color = "#ffc600", linewidth = 1) +
+  theme_light()
 ```
 
 ## Modelo recíproco
@@ -144,7 +153,45 @@ ggplot(lineal_df, aes(x = fecha, y = remesas)) +
 
 ## Hipótesis del modelo logarítmico
 
-[Planteamiento y resultados.]
+**Planteamiento:**
+
+El modelo ajustado es:
+
+$$\hat{y} = \beta_0 + \beta_1 \ln(t) + \varepsilon$$
+
+Se plantean las siguientes hipótesis para evaluar si el índice temporal (en escala logarítmica) tiene efecto significativo sobre las remesas:
+
+- $H_0: \beta_1 = 0$ — El tiempo no tiene efecto lineal sobre $\ln(t)$
+- $H_1: \beta_1 \neq 0$ — El tiempo sí tiene efecto significativo
+
+**Resultados:**
+
+```{r hipotesis-logaritmico}
+summary(modelo_logaritmico)
+```
+
+**Interpretación:**
+
+Del `summary()` se observa:
+
+- El **p-value** del coeficiente `log(t)` es < 2e-16, muy por debajo de 0.05,
+  por lo que se rechaza $H_0$ y se concluye que el tiempo (en escala logarítmica)
+  tiene un efecto significativo sobre las remesas. Por cada unidad que aumenta
+  $\ln(t)$, las remesas aumentan en promedio **Q401.08 millones**.
+
+- El **$R^2$ = 0.4527**, lo que indica que el modelo explica apenas el **45.27%**
+  de la variabilidad total en las remesas. Esto sugiere que el modelo logarítmico
+  **no captura bien** el comportamiento de los datos, especialmente el crecimiento
+  acelerado observado a partir de 2020.
+
+- El **estadístico F = 239.1** con p-value < 2.2e-16 confirma que el modelo es
+  globalmente significativo, aunque su capacidad explicativa es limitada dado el
+  bajo $R^2$.
+
+En conclusión, si bien el modelo logarítmico es estadísticamente significativo,
+un $R^2$ de 0.45 indica un ajuste moderado-bajo. Se esperaría que modelos como
+el **exponencial o potencial** logren un mejor ajuste dado el patrón de
+crecimiento acelerado en los datos.
 
 ## Hipótesis del modelo recíproco
 
