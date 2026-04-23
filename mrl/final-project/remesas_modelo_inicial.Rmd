@@ -1,7 +1,6 @@
 ---
 title: "Proyecto Final - Modelado de Remesas"
 author: "Grupo 10"
-date: "`r Sys.Date()`"
 output:
   pdf_document: default
   html_document: default
@@ -23,69 +22,13 @@ library(lmtest)
 library(tseries)
 ```
 
-## Cargar datos
+## Integrantes:
 
-```{r read-data}
-remesas_wide <- read_csv(
-  here("mrl/final-project/remfam2002_2026.csv"),
-  show_col_types = FALSE
-)
-
-remesas_wide_muestra <- remesas_wide %>%
-  select(Mes, all_of(c("2002", "2003", "2004", "2023", "2024", "2025", "2026")))
-
-kable(
-  remesas_wide_muestra,
-  caption = "Tabla original (ancho): años 2002-2004 y 2023-2026"
-)
-
-```
-
-## Transformar de formato ancho a largo y construir indice temporal
-
-```{r transform-data}
-meses <- c(
-  "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
-  "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
-)
-
-remesas_long <- remesas_wide %>%
-  pivot_longer(
-    cols = -Mes,
-    names_to = "anio",
-    values_to = "remesas"
-  ) %>%
-  mutate(
-    anio = as.integer(anio),
-    remesas = as.numeric(remesas)
-  ) %>%
-  drop_na(remesas) %>%
-  mutate(
-    mes_num = match(Mes, meses),
-    fecha = as.Date(sprintf("%04d-%02d-01", anio, mes_num))
-  ) %>%
-  arrange(fecha) %>%
-  mutate(t = row_number())
-```
-
-```{r remesas-long-head}
-kable(
-  head(remesas_long),
-  caption = "Primeras filas de remesas_long (formato largo)"
-)
-```
-
-```{r total-observaciones}
-resumen_observaciones <- data.frame(
-  Metrica = "Numero total de observaciones",
-  Valor = nrow(remesas_long)
-)
-
-kable(
-  resumen_observaciones,
-  caption = "Resumen de observaciones"
-)
-```
+- César Reginaldo Tzoc Alvarado
+- Héctor Adolfo Son Chiché
+- Julio Fernando Ixcoy
+- Ronald Raúl Ramírez Ruano
+- Carlos Andreé Bran Gaytán
 
 # Introducción
 
@@ -95,7 +38,7 @@ estudio preferentemente requerido por el investigador, por medio de las variable
 cualitativas, siendo medibles en el tiempo, se pueden observar ciclos, o reincidencias
 de los fenómenos. Con ese preámbulo, hemos obtenido a través de información libre, 
 en nuestra región, una base de datos por medio del banco de Guatemala, promedio de 
-millones de quetzales de remesas efectuadas del exterior, hacia las familias 
+millones de dolares de remesas efectuadas del exterior, hacia las familias
 de la localidad.
 
 Las remesas familiares representan uno de los flujos económicos más importantes
@@ -204,6 +147,72 @@ de divisas del pais y superando en anos recientes los ingresos por
 exportaciones tradicionales (Banco de Guatemala, 2025). El analisis de su
 dinamica temporal mediante modelos de regresion permite identificar patrones
 de crecimiento y apoyar la toma de decisiones en politica economica.
+
+# Datos y preparación
+
+## Cargar datos
+
+```{r read-data}
+remesas_wide <- read_csv(
+  here("mrl/final-project/remfam2002_2026.csv"),
+  show_col_types = FALSE
+)
+
+remesas_wide_muestra <- remesas_wide %>%
+  select(Mes, all_of(c("2002", "2003", "2004", "2023", "2024", "2025", "2026")))
+
+kable(
+  remesas_wide_muestra,
+  caption = "Tabla original (ancho): años 2002-2004 y 2023-2026"
+)
+
+```
+
+## Transformar de formato ancho a largo y construir indice temporal
+
+```{r transform-data}
+meses <- c(
+  "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+  "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
+)
+
+remesas_long <- remesas_wide %>%
+  pivot_longer(
+    cols = -Mes,
+    names_to = "anio",
+    values_to = "remesas"
+  ) %>%
+  mutate(
+    anio = as.integer(anio),
+    remesas = as.numeric(remesas)
+  ) %>%
+  drop_na(remesas) %>%
+  mutate(
+    mes_num = match(Mes, meses),
+    fecha = as.Date(sprintf("%04d-%02d-01", anio, mes_num))
+  ) %>%
+  arrange(fecha) %>%
+  mutate(t = row_number())
+```
+
+```{r remesas-long-head}
+kable(
+  head(remesas_long),
+  caption = "Primeras filas de remesas_long (formato largo)"
+)
+```
+
+```{r total-observaciones}
+resumen_observaciones <- data.frame(
+  Metrica = "Numero total de observaciones",
+  Valor = nrow(remesas_long)
+)
+
+kable(
+  resumen_observaciones,
+  caption = "Resumen de observaciones"
+)
+```
 
 # Análisis de cada modelo
 
@@ -940,4 +949,3 @@ kable(
   fuentes de divisas de Guatemala, se recomienda al Estado diseñar políticas
   que reduzcan la vulnerabilidad económica ante posibles caídas en estos
   flujos, diversificando las fuentes de ingreso externo del país.
-
