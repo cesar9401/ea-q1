@@ -180,21 +180,72 @@ Se usa cuando la variable crece (o decrece) a una tasa porcentual constante. Es 
 
 $\ln(y) = \beta_0 + \beta_1 x$
 
-[Espacio para el análisis del modelo exponencial.]
+### 1) Definición del modelo
 
-```{r modelo-exponencial-placeholder}
-# agregar exponencial aqui
-remesas_long$remesas_log <- log(remesas_long$remesas)
-modelo_exp <- lm(remesas_log ~ t, data = remesas_long)
-summary(modelo_exp)
-
-formula <- function(x) { exp(modelo_exp$coefficients[1]) * exp(modelo_exp$coefficients[[2]] * x) }
-
-plot(remesas_long$t, remesas_long$remesas, col = "#1f4e79", ann = F)
-par(new = T)
-plot(remesas_long$t, formula(remesas_long$t),
-     col = "#ffc600", lwd = 2, type = 'l')
+```{r modelo-exponencial-definicion}
+modelo_exponencial <- lm(log(remesas) ~ t, data = remesas_long)
 ```
+
+### 2) Resumen del modelo
+
+```{r modelo-exponencial-resumen, echo = FALSE}
+resumen_exponencial <- summary(modelo_exponencial)
+
+coeficientes_exponencial <- as.data.frame(coef(resumen_exponencial))
+coeficientes_exponencial$Termino <- rownames(coeficientes_exponencial)
+coeficientes_exponencial <- coeficientes_exponencial %>%
+  select(Termino, Estimate, `Std. Error`, `t value`, `Pr(>|t|)`)
+
+fstat_exponencial <- resumen_exponencial$fstatistic
+pvalor_global_exponencial <- pf(
+  fstat_exponencial[1],
+  fstat_exponencial[2],
+  fstat_exponencial[3],
+  lower.tail = FALSE
+)
+
+metricas_exponencial <- data.frame(
+  Metrica = c("R^2", "R^2 ajustado", "p-value global (F-test)"),
+  Valor = c(
+    resumen_exponencial$r.squared,
+    resumen_exponencial$adj.r.squared,
+    pvalor_global_exponencial
+  )
+)
+
+kable(
+  coeficientes_exponencial,
+  digits = 4,
+  caption = "Coeficientes del modelo exponencial (escala log)"
+)
+
+kable(
+  metricas_exponencial,
+  digits = 6,
+  caption = "Metricas principales del modelo exponencial"
+)
+```
+
+### 3) Gráfica del modelo
+
+```{r modelo-exponencial-grafica}
+exponencial_df <- remesas_long %>%
+  mutate(ajuste_exponencial = exp(fitted(modelo_exponencial)))
+
+ggplot(exponencial_df, aes(x = fecha, y = remesas)) +
+  geom_point(color = "#1f4e79", alpha = 0.7) +
+  geom_line(aes(y = ajuste_exponencial), color = "#ffc600", linewidth = 1) +
+  labs(
+    title = "Modelo exponencial: datos observados y ajuste",
+    x = "Fecha",
+    y = "Remesas (millones de USD)"
+  ) +
+  theme_light()
+```
+
+### 4) Interpretación breve
+
+Con base en el valor de $R^2$ ajustado (`r sprintf("%.5f", resumen_exponencial$adj.r.squared)`) y en la grafica de ajuste, el modelo exponencial presenta un ajuste parcial para describir la serie de remesas. Este modelo captura mejor la tendencia de crecimiento que el modelo lineal en los periodos de incremento acelerado, aunque puede mantener diferencias en meses con variaciones estacionales marcadas.
 
 ## Modelo logarítmico
 
