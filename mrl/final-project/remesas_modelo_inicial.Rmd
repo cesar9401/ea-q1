@@ -10,12 +10,17 @@ output:
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 
+if (!require(lmtest))  install.packages("lmtest",  quiet = TRUE)
+if (!require(tseries)) install.packages("tseries", quiet = TRUE)
+
 library(here)
 library(readr)
 library(dplyr)
 library(tidyr)
 library(ggplot2)
 library(knitr)
+library(lmtest)
+library(tseries)
 ```
 
 ## Cargar datos
