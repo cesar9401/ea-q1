@@ -58,8 +58,8 @@ comprender si presenta efecto significativo hacia el modelo global aplicado.
 
 ## Objetivo general
 
-- Comparar modelos de regresión no lineal (lineal, exponencial, logarítmico,
-  recíproco y potencial) aplicados a las remesas familiares de Guatemala
+- Comparar modelos de regresión lineal, exponencial, logarítmico,
+  recíproco y potencial, aplicados a las remesas familiares de Guatemala
   durante el periodo 2002–2026, identificando el modelo que mejor describe
   su dinámica de crecimiento.
 
@@ -92,7 +92,7 @@ los residuos $\sum(Y_i - \hat{Y}_i)^2$. La bondad de ajuste se mide con el
 coeficiente de determinación $R^2$, que indica la proporción de variabilidad
 en $Y$ explicada por el modelo (Montgomery et al., 2012).
 
-## Modelos de regresión no lineal linealizables
+## Modelos de regresión
 
 Cuando la relación entre las variables no es lineal, es posible aplicar
 transformaciones algebraicas que permiten reexpresar el modelo en una forma
@@ -851,65 +851,6 @@ En general, el modelo exponencial es el que presenta los residuos más
 cercanos a los supuestos esperados, lo cual es consistente con su mayor
 $R^2$ y con el patrón de crecimiento observado en las remesas guatemaltecas.
 
-## Pruebas formales de supuestos
-
-Se aplican tres pruebas formales sobre los residuos de cada modelo con
-nivel de significancia $\alpha = 0.05$: Jarque-Bera (normalidad),
-Breusch-Pagan (homocedasticidad) y Durbin-Watson (independencia).
-
-```{r pruebas-formales, echo=FALSE}
-prueba_supuestos <- function(modelo, nombre, residuos) {
-  jb <- jarque.bera.test(residuos)
-  bp <- bptest(modelo)
-  dw <- dwtest(modelo)
-  data.frame(
-    Modelo         = nombre,
-    JB_estadistico = round(as.numeric(jb$statistic), 3),
-    JB_pvalue      = round(jb$p.value, 4),
-    BP_estadistico = round(as.numeric(bp$statistic), 3),
-    BP_pvalue      = round(bp$p.value, 4),
-    DW_estadistico = round(as.numeric(dw$statistic), 3),
-    DW_pvalue      = round(dw$p.value, 4)
-  )
-}
-
-resultados_supuestos <- rbind(
-  prueba_supuestos(modelo_lineal,      "Lineal",      res_lineal),
-  prueba_supuestos(modelo_exponencial, "Exponencial", res_exponencial),
-  prueba_supuestos(modelo_logaritmico, "Logaritmico", res_logaritmico),
-  prueba_supuestos(modelo_reciproco,   "Reciproco",   res_reciproco),
-  prueba_supuestos(modelo_potencial,   "Potencial",   res_potencial)
-)
-
-kable(
-  resultados_supuestos,
-  caption = "Pruebas formales de supuestos de regresion (nivel de significancia 0.05)",
-  col.names = c("Modelo",
-                "JB Estadistico", "JB p-value",
-                "BP Estadistico", "BP p-value",
-                "DW Estadistico", "DW p-value")
-)
-```
-
-**Interpretacion de las pruebas formales:**
-
-- **Jarque-Bera (normalidad):** $H_0$: los residuos son normales. Un p-value
-  menor a 0.05 indica rechazo de normalidad. El modelo exponencial es el que
-  mas se acerca al cumplimiento de este supuesto.
-
-- **Breusch-Pagan (homocedasticidad):** $H_0$: la varianza de los residuos es
-  constante. Un p-value menor a 0.05 indica heterocedasticidad. El modelo lineal
-  presenta heterocedasticidad marcada, consistente con el patron de abanico
-  observado visualmente. El modelo exponencial muestra el mejor comportamiento
-  en este supuesto.
-
-- **Durbin-Watson (independencia):** Un estadistico cercano a 2 indica ausencia
-  de autocorrelacion. Dado que los datos conforman una serie de tiempo mensual,
-  es esperable encontrar algun grado de autocorrelacion en todos los modelos.
-  Esto no invalida el analisis comparativo, pero sugiere que para proyecciones
-  precisas seria conveniente complementar con modelos de series de tiempo
-  (por ejemplo, SARIMA).
-
 # Conclusiones
 
 - Se ajustaron cinco modelos de regresión sobre 291 observaciones mensuales
@@ -949,3 +890,6 @@ kable(
   fuentes de divisas de Guatemala, se recomienda al Estado diseñar políticas
   que reduzcan la vulnerabilidad económica ante posibles caídas en estos
   flujos, diversificando las fuentes de ingreso externo del país.
+
+# Anexos
+- Base de datos tomada de: https://banguat.gob.gt/page/anos-2002-2026
